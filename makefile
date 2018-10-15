@@ -1,14 +1,19 @@
 CC=gcc
-CFLAGS= -Wall -g -std=c11 -I.
-DEPS= tcl/cl_functions.h
-OBJ= main.o tcl/tcl_functions.o
+CFLAGS= -Wall -g -std=c11 -I. -ltcl8.6 -lreadline
+OBJ= main.o tcl/tcl_functions.o readline/readline_functions.o
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-main_game: $(OBJ)
+main: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
+# readline function make 
+readline/readline_functions.o: readline/readline_functions.c readline/readline_functions.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# tcl function make 
+tcl/tcl_functions.o: tcl/tcl_functions.c tcl/tcl_functions.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# clean stuff 
 clean_obj:
 	rm $(OBJ) 
 
