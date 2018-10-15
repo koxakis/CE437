@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -Wall -g -std=c11 -I. -ltcl8.6 -lreadline
+CFLAGS= -Wall -g -I. -ltcl8.6 -lreadline
 OBJ= main.o tcl/tcl_functions.o readline/readline_functions.o
 
 main: $(OBJ)

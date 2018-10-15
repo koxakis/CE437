@@ -1,7 +1,7 @@
 /*************************************************************************************/
-/* 																    CE437   																			  
-/* 														   Nikolas Koxenoglou																		
-/* 																																									 
+//											CE437   																			  
+//									  Nikolas Koxenoglou																		
+// 											   																														 
 /*************************************************************************************/
 
 #include <tcl8.6/tcl.h>
@@ -24,4 +24,14 @@ void init_interpreter()
 	// define new tcl comands //
 	//Tcl_CreateObjCommand(interpreter, "less", less, NULL, NULL);
 	//Tcl_CreateObjCommand(interpreter, "ls", ls, NULL, NULL);
+}
+
+int less()
+{
+	return TCL_OK;
+}
+
+int ls()
+{
+	return TCL_OK;
 }
