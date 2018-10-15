@@ -1,0 +1,6 @@
+{
+    "editor.fontSize": 13,
+    "editor.multiCursorModifier": "ctrlCmd",
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": false
+}
