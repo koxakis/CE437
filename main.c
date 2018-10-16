@@ -127,7 +127,5 @@ int main(int argc, char *argv[])
 		}	
 	}
 	free (clean_line);
-	free(commands_list);
-
 	return EXIT_FAILURE;
 }
