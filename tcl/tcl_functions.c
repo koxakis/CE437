@@ -76,7 +76,6 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 	system(com_command);
 
 	free (com_command);
-	//free (arguments);
 	return TCL_OK;
 }
 
@@ -163,8 +162,6 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 	// send command to System //
 	system(com_command);
 
-	//free(com_command);
-	//free(ls_path);
-	//free(arguments);
+	free(com_command);
 	return TCL_OK;
 }
