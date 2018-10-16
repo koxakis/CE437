@@ -5,24 +5,108 @@
 /*************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <limits.h>
 
 #include "tcl/tcl_functions.h"
 #include "readline/readline_functions.h"
 
 
-char *line;
-
 int main(int argc, char *argv[])
 {
-	
 
+	int expansion_res;
+	int tcl_res;
+	char *text_expantion;
+	// line for readline use //
+	char *line=NULL;
+	char *clean_line=NULL;
+
+	// readline/hostory.h internal struct //
+	HIST_ENTRY **the_history_list; // readline commands history list - NULL terminated //
+
+	char command[LINE_MAX]; // current command //
+	unsigned long i;
+
+	// identify or return the name of the binary file containing the application // 
 	find_executable(argv[0]);
 
+	// Tcl_CreateInterp creates a new interpreter structure and returns a token for it //
 	init_interpreter();
 
+	// initialize readline and set custom completer //
 	init_readline();
+	
+	while(1)
+	{
+		line = readline("k_shell-> ");
 
-	line = readline("koxe_shell: ");
+		// if line is null quit //
+		if (line == NULL)
+		{
+			fprintf(stderr, "!!!Error in line \n");
+			return EXIT_FAILURE;
+		}
+
+		clean_line = stripwhite(line);
+
+		expansion_res = history_expand(line, &text_expantion);
+		
+		if ( expansion_res == -1)
+		{
+			fprintf(stderr, "!!!Error in history expanding: %s\n", text_expantion);
+			return EXIT_FAILURE;
+
+		}
+		else if ( (expansion_res == 0) || (expansion_res == 2) ) 
+		{
+			add_history(clean_line);
+			// store command //
+			strcpy(command, line);
+		} 
+		else 
+		{
+			add_history(text_expantion);
+			// store command //
+			strcpy(command, text_expantion);
+		}
+		free (text_expantion);
+		free (line);
+		
+		if (strcmp(command, "quit") == 0) 
+		{
+			printf ("Good bye !!!\n");
+			return EXIT_SUCCESS;
+		}
+		else if (strcmp(command, "history") == 0) 
+		{
+			// get history list and store in HIST_ENTRY ** history_list (void)//
+			the_history_list = history_list();
+
+			if (the_history_list != NULL)
+			{
+				i = 0;
+				// loop until list finds NULL //
+				while (*(the_history_list + i) != NULL)
+				{
+					printf("\t%ld: %s\n", (i+history_base), (*(the_history_list + i))->line);
+					i++;
+				}
+			}
+		}
+		else // run the tcl stuff //
+		{
+			tcl_res = Tcl_Eval(interpreter, command);
+			if (tcl_res == TCL_ERROR)
+			{
+				fprintf(stderr, "!!! Unknown tcl command\n");
+				//return EXIT_FAILURE;
+			}
+		}	
+	}
+	
+	free (clean_line);
+	//free(commands_list);
 
 	return 0;
 }

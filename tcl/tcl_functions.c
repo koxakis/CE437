@@ -17,8 +17,7 @@ void find_executable(char *argv)
 // Tcl_CreateInterp creates a new interpreter structure and returns a token for it //
 void init_interpreter()
 {
-	Tcl_Interp *interpreter = NULL;
-
+	interpreter = NULL;
 	interpreter = Tcl_CreateInterp();
 
 	// define new tcl comands //

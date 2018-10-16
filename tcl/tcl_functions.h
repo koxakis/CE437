@@ -3,6 +3,9 @@
 //									  Nikolas Koxenoglou																		
 // 											   																														 
 /*************************************************************************************/
+#include <tcl8.6/tcl.h>
+
+Tcl_Interp *interpreter;
 
 // function prototypes //
 

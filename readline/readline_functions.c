@@ -13,12 +13,15 @@
 
 #include "readline_functions.h"
 
-
-char *commands_list[] = {
-	"ls", "less",NULL
+char *commands_list[]= {
+	// my commands //
+	"ls", "less", "history", "quit"
+	// some extra for convenience //
+	,"exit" 
+	,NULL
 };
 
-// initialize readline  
+// initialize readline, set custom completer and history//
 void init_readline(){
 
 	// use the default file name completer //
@@ -27,6 +30,8 @@ void init_readline(){
 	rl_attempted_completion_function = custom_completer;
 
 	rl_completion_append_character = '\0';
+
+	using_history();
 }
 
 // complete commands with target for completion text bounded //
@@ -69,12 +74,34 @@ char *command_gen(const char *text, int state)
 	{
 		index_list++;
 
+		// should a much be found , return it //
 		if ( strncmp(name, text, length) == 0 ) 
 		{
-			// if found return name //
+			// if found, return duplicated string //
 			return strdup(name);
 		}
 	}
 	
+	// return NULL when reached the end //
 	return NULL;
+}
+
+// Strip whitespace from the start and end of STRING.  Return a pointer
+//   into STRING. //
+char *stripwhite (char *string)
+{
+   register char *s, *t;
+
+   for (s = string; isspace (*s); s++)
+      ;
+
+   if (*s == 0)
+      return (s);
+
+   t = s + strlen (s) - 1;
+   while (t > s && isspace (*t))
+      t--;
+   *++t = '\0';
+
+   return s;
 }
