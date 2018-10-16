@@ -32,7 +32,7 @@ int init_interpreter()
 	return EXIT_SUCCESS;
 	// define new tcl comands //
 }
-
+// display the contents of a file //
 int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
 	char command[] = "less";
@@ -63,13 +63,14 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 		return TCL_ERROR;
 	}
 
-	// compine command and args to send to System //
+	// combine command and args to send to System //
 	sprintf(com_command, "%s %s", command, arguments);
 	system(com_command);
 
 	return TCL_OK;
 }
 
+// display the given directory's containts //
 int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
 	char command[] = "ls";

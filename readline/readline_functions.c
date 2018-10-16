@@ -88,7 +88,7 @@ char *command_gen(const char *text, int state)
 
 	char *name;
 
-	// initialize word, if this is a new word to complete, and set //
+	// initialize word, if this is a new word to complete, and //
 	// set index to 0 //
 	if (!state) {
 		index_list = 0;
@@ -103,7 +103,7 @@ char *command_gen(const char *text, int state)
 		// should a much be found , return it //
 		if ( strncmp(name, text, length) == 0 ) 
 		{
-			// if found, return duplicated string //
+			// if found, return string //
 			return strdup(name);
 		}
 	}

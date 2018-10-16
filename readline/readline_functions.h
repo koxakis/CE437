@@ -28,4 +28,4 @@ void init_readline();
 
 // strip whitespace from the start and end of STRING // 
 // return a pointer into STRING. //
-char *stripwhite (char *string);
+char *stripwhite (char *);

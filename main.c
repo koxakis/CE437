@@ -37,6 +37,12 @@ int main(int argc, char *argv[])
 
 	// initialize readline and set custom completer //
 	init_readline();
+
+	printf("*****************************\n");
+	printf("CE437\n");
+	printf("CAD1 shell		\n");
+	printf("Nikolas Koxenoglou	\n");
+	printf("*****************************\n");
 	
 	while(1)
 	{
@@ -50,6 +56,7 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 
+		// clean whitespaces from input //
 		clean_line = stripwhite(line);
 
 		// expand history //
@@ -62,6 +69,7 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 
 		}
+		// no expantion needed or do not exeute yet //
 		else if ( (expansion_res == 0) || (expansion_res == 2) ) 
 		{
 			add_history(clean_line);
@@ -75,11 +83,12 @@ int main(int argc, char *argv[])
 			strcpy(command, text_expantion);
 		}
 		free (text_expantion);
-		free (line);		
-		
-		if (strcmp(command, "quit") == 0) 
+		free (line);
+				
+		// display exit message for all the available proper exit methods //
+		if ( (strcmp(command, "quit") == 0) || (strcmp(command, "exit") == 0) || (strcmp(command, "q") == 0) ) 
 		{
-			printf ("\n\nGood bye !!!\n");
+			printf ("\nGood bye !!!\n");
 			return EXIT_SUCCESS;
 		}
 		else if (strcmp(command, "history") == 0) 
