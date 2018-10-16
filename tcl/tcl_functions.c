@@ -76,7 +76,7 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 	system(com_command);
 
 	free (com_command);
-	free (arguments);
+	//free (arguments);
 	return TCL_OK;
 }
 
