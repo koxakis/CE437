@@ -86,7 +86,7 @@ char *command_gen(const char *text, int state)
 	// input text length //
 	static int length;
 
-	char *name;
+	char *name = NULL;
 
 	// initialize word, if this is a new word to complete, and //
 	// set index to 0 //
@@ -107,7 +107,7 @@ char *command_gen(const char *text, int state)
 			return strdup(name);
 		}
 	}
-	
+	free (name);
 	// return NULL when reached the end //
 	return NULL;
 }

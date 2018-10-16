@@ -20,18 +20,26 @@ int init_interpreter()
 {
 	interpreter = NULL;
 	interpreter = Tcl_CreateInterp();
-
+		
+	// define new tcl comands //
 	Tcl_CreateObjCommand(interpreter, "less", less, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "ls", ls, NULL, NULL);
 
-	if (Tcl_Init(interpreter) != TCL_OK)
+	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
 		fprintf(stderr, "\x1B[31m!!!Error while creating interpreter  \n");
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
-	// define new tcl comands //
 }
+
+// delete created interpreter //
+int del_interpreter()
+{
+	Tcl_DeleteInterp(interpreter);
+	return EXIT_SUCCESS;
+}
+
 // display the contents of a file //
 int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
@@ -67,6 +75,8 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 	sprintf(com_command, "%s %s", command, arguments);
 	system(com_command);
 
+	free (com_command);
+	free (arguments);
 	return TCL_OK;
 }
 
@@ -153,5 +163,8 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 	// send command to System //
 	system(com_command);
 
+	free(com_command);
+	//free(ls_path);
+	free(arguments);
 	return TCL_OK;
 }

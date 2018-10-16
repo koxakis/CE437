@@ -84,10 +84,11 @@ int main(int argc, char *argv[])
 		}
 		free (text_expantion);
 		free (line);
-				
+
 		// display exit message for all the available proper exit methods //
 		if ( (strcmp(command, "quit") == 0) || (strcmp(command, "exit") == 0) || (strcmp(command, "q") == 0) ) 
 		{
+			del_interpreter();
 			printf ("\nGood bye !!!\n");
 			return EXIT_SUCCESS;
 		}
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
 		}	
 	}
 	free (clean_line);
-	//free(commands_list);
+	free(commands_list);
 
 	return EXIT_FAILURE;
 }
