@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
-		line = readline("k_shell-> ");
+		line = readline("CAD1_shell-> ");
 
 		// if line is null quit //
 		if (line == NULL)
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 			tcl_res = Tcl_Eval(interpreter, command);
 			if (tcl_res == TCL_ERROR)
 			{
-				fprintf(stderr, "!!! Error tcl command \n");
+				fprintf(stderr, "!!! Error tcl command: %s\n", command);
 			} 
 			else if (tcl_res == TCL_OK)
 			{
