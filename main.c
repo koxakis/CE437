@@ -40,12 +40,13 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
-		line = readline("CAD1_shell-> ");
+		// make shell green and arrow white //
+		line = readline("\x1B[32m CAD1_shell \x1B[37m-> ");
 
 		// if line is null quit //
 		if (line == NULL)
 		{
-			fprintf(stderr, "!!!Error in line \n");
+			fprintf(stderr, "\x1B[31m!!!Error in line \n");
 			return EXIT_FAILURE;
 		}
 
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 		// in case of history expantion error //
 		if ( expansion_res == -1)
 		{
-			fprintf(stderr, "!!!Error in history expanding: %s\n", text_expantion);
+			fprintf(stderr, "\x1B[31m!!!Error in history expanding: %s\n", text_expantion);
 			return EXIT_FAILURE;
 
 		}
@@ -103,7 +104,7 @@ int main(int argc, char *argv[])
 			tcl_res = Tcl_Eval(interpreter, command);
 			if (tcl_res == TCL_ERROR)
 			{
-				fprintf(stderr, "!!! Error tcl command: %s\n", command);
+				fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
 			} 
 			else if (tcl_res == TCL_OK)
 			{

@@ -26,7 +26,7 @@ int init_interpreter()
 
 	if (Tcl_Init(interpreter) != TCL_OK)
 	{
-		fprintf(stderr, "!!!Error while creating interpreter  \n");
+		fprintf(stderr, "\x1B[31m!!!Error while creating interpreter  \n");
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
@@ -43,7 +43,7 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 	// protect from segmentation faults by checking the arguments //
 	if (argc != 2)
 	{
-		fprintf(stderr, "!!! (less) not enough arguments \n less <file> \n");
+		fprintf(stderr, "\x1B[31m!!! (less) not enough arguments \n\x1B[37m less <file> \n");
 		return TCL_ERROR;
 	}
 	// get filename argument //
@@ -52,14 +52,14 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 	arguments = Tcl_GetStringFromObj(argv[1], &file_length);
 	if (arguments == NULL)
 	{
-		fprintf(stderr, "!!!Error while aquaring arguments  \n");
+		fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
 		return TCL_ERROR;
 	}
 	// allocate memory for system command //
 	com_command = (char *) malloc((file_length ) * sizeof(char));
 	if (com_command == NULL)
 	{
-		fprintf(stderr, "!!!Error in memory allocation \n");
+		fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
 		return TCL_ERROR;
 	}
 
@@ -82,7 +82,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 	// protect from segmentation faults by checking the arguments //
 	if ( (argc > 3) || (argc < 2) )
 	{
-		fprintf(stderr, "!!! (ls) not enough arguments \n ls <arg> <directory> \nor ls <directory>\n");
+		fprintf(stderr, "\x1B[31m!!! (ls) not enough arguments \n\x1B[37m ls <arg> <directory> \nor ls <directory>\n");
 		return TCL_ERROR;
 	}
 
@@ -91,13 +91,13 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		arguments = Tcl_GetStringFromObj(argv[1], &arg_length);
 		if (arguments == NULL)
 		{
-			fprintf(stderr, "!!!Error while aquaring arguments  \n");
+			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
 			return TCL_ERROR;
 		}
 		// check if second argument is an ls argument //
 		if ( arguments[0] != '-' )
 		{
-			fprintf(stderr, "!!! (ls) missing argument\n ls <arguments> <directory>\n");
+			fprintf(stderr, "\x1B[31m!!! (ls) missing argument\n\x1B[37m ls <arguments> <directory>\n");
 			return TCL_ERROR;
 		}
 	
@@ -105,20 +105,20 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		ls_path = Tcl_GetStringFromObj(argv[2], &dir_length);
 		if (ls_path == NULL)
 		{
-			fprintf(stderr, "!!!Error while aquaring arguments  \n");
+			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
 			return TCL_ERROR;
 		}
 		// check if third argument is a directory //
 		if ( ls_path[0] == '-' )
 		{
-			fprintf(stderr, "!!! (ls) missing directory\n ls <arguments> <directory>\n");
+			fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <arguments> <directory>\n");
 			return TCL_ERROR;
 		}
 
 		com_command = (char *) malloc((arg_length + dir_length) * sizeof(char));
 		if (com_command == NULL)
 		{
-			fprintf(stderr, "!!!Error in memory allocation \n");
+			fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
 			return TCL_ERROR;
 		}
 		sprintf(com_command, "%s %s %s", command, arguments, ls_path);
@@ -129,21 +129,21 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		ls_path = Tcl_GetStringFromObj(argv[1], &dir_length);
 		if (ls_path == NULL)
 		{
-			fprintf(stderr, "!!!Error while aquaring arguments  \n");
+			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
 			return TCL_ERROR;
 		}
 
 		// check if second argument is not a directory //
 		if ( ls_path[0] == '-' )
 		{
-			fprintf(stderr, "!!! (ls) missing directory\n ls <directory>\n");
+			fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <directory>\n");
 			return TCL_ERROR;
 		}
 
 		com_command = (char *) malloc((dir_length) * sizeof(char));
 		if (com_command == NULL)
 		{
-			fprintf(stderr, "!!!Error in memory allocation \n");
+			fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
 			return TCL_ERROR;
 		}	
 		sprintf(com_command, "%s %s", command, ls_path);

@@ -5,6 +5,9 @@
 /*************************************************************************************/
 #include <tcl8.6/tcl.h>
 
+#define WHITE "\x1B[37m"
+#define RED "\x1B[31m"
+
 Tcl_Interp *interpreter;
 
 // function prototypes //
