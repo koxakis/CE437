@@ -25,7 +25,8 @@ int main(int argc, char *argv[])
 	// readline/hostory.h internal struct //
 	HIST_ENTRY **the_history_list; // readline commands history list - NULL terminated //
 
-	char command[LINE_MAX]; // current command //
+	// current command //
+	char command[LINE_MAX]; 
 	unsigned long i;
 
 	// identify or return the name of the binary file containing the application // 
@@ -50,8 +51,10 @@ int main(int argc, char *argv[])
 
 		clean_line = stripwhite(line);
 
+		// expand history //
 		expansion_res = history_expand(line, &text_expantion);
 		
+		// in case of history expantion error //
 		if ( expansion_res == -1)
 		{
 			fprintf(stderr, "!!!Error in history expanding: %s\n", text_expantion);
@@ -71,11 +74,11 @@ int main(int argc, char *argv[])
 			strcpy(command, text_expantion);
 		}
 		free (text_expantion);
-		free (line);
+		free (line);		
 		
 		if (strcmp(command, "quit") == 0) 
 		{
-			printf ("Good bye !!!\n");
+			printf ("\n\nGood bye !!!\n");
 			return EXIT_SUCCESS;
 		}
 		else if (strcmp(command, "history") == 0) 
@@ -94,19 +97,26 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-		else // run the tcl stuff //
-		{
+		else // run the tcl //
+		{	
+			// evaluate tcl commands //
 			tcl_res = Tcl_Eval(interpreter, command);
 			if (tcl_res == TCL_ERROR)
 			{
-				fprintf(stderr, "!!! Unknown tcl command\n");
-				//return EXIT_FAILURE;
+				fprintf(stderr, "!!! Error tcl command \n");
+			} 
+			else if (tcl_res == TCL_OK)
+			{
+				// returns the result for interpreter as a string if there is one //
+				if (*Tcl_GetStringResult(interpreter) != '\0')
+				{
+		        	printf("%s\n", Tcl_GetStringResult(interpreter));
+				}
 			}
 		}	
 	}
-	
 	free (clean_line);
 	//free(commands_list);
 
-	return 0;
+	return EXIT_FAILURE;
 }

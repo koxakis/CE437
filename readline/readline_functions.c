@@ -3,7 +3,6 @@
 //									  Nikolas Koxenoglou																		
 // 											   																														 
 /*************************************************************************************/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,10 +14,37 @@
 
 char *commands_list[]= {
 	// my commands //
-	"ls", "less", "history", "quit"
-	// some extra for convenience //
-	,"exit" 
-	,NULL
+	"ls", "less", "history", "quit",
+	// standard tcl command for TCL8.6//
+	"after", "errorInfo", "load", "re_syntax", "tcl_startOfNextWord",
+	"append","eval","lrange","read","tcl_startOfPreviousWord",
+	"apply","exec","lrepeat","refchan","tcl_traceCompile",
+	"argc","exit","lreplace","regexp","tcl_traceExec",
+	"argv","expr","lreverse","registry","tcl_version",
+	"argv0","fblocked","lsearch","regsub","tcl_wordBreakAfter",
+	"array","fconfigure","lset","rename","tcl_wordBreakBefore",
+	"auto_execok","fcopy","lsort","return","tcl_wordchars",
+	"auto_import","file","mathfunc","safe","tcltest",
+	"auto_load","fileevent","mathop","scan","tell",
+	"auto_mkindex","filename","memory","seek","throw",
+	"auto_path","flush","msgcat","self","time",
+	"auto_qualify","for","my","set","tm",
+	"auto_reset","foreach","namespace","socket","trace",
+	"bgerror","format","next","source","transchan",
+	"binary","gets","nextto","split","try",
+	"break","glob","oo::class","string","unknown",
+	"catch","global","oo::copy","subst","unload",
+	"cd","history","oo::define","switch","unset",
+	"chan","http","oo::objdefine","tailcall","update",
+	"clock","if","oo::object","Tcl","uplevel",
+	"close","incr","open","tcl::prefix","upvar",
+	"concat","info","package","tcl_endOfWord","variable",
+	"continue","interp","parray","tcl_findLibrary","vwait",
+	"coroutine","join","pid","tcl_interactive","while",
+	"dde","lappend","pkg::create","tcl_library","yield",
+	"dict","lassign","pkg_mkIndex","tcl_nonwordchars","yieldto",
+	"encoding","lindex","platform","tcl_patchLevel","zlib",
+	NULL
 };
 
 // initialize readline, set custom completer and history//
@@ -86,21 +112,24 @@ char *command_gen(const char *text, int state)
 	return NULL;
 }
 
-// Strip whitespace from the start and end of STRING.  Return a pointer
-//   into STRING. //
+// strip whitespace from the start and end of STRING // 
+// return a pointer into STRING. //
 char *stripwhite (char *string)
 {
    register char *s, *t;
 
-   for (s = string; isspace (*s); s++)
-      ;
+   for (s = string; isspace (*s); s++);
 
    if (*s == 0)
-      return (s);
+   {
+    	return (s);
+   }
 
    t = s + strlen (s) - 1;
    while (t > s && isspace (*t))
-      t--;
+   {
+		t--;
+   }
    *++t = '\0';
 
    return s;
