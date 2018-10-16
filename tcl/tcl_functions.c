@@ -94,12 +94,24 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			fprintf(stderr, "!!!Error while aquaring arguments  \n");
 			return TCL_ERROR;
 		}
+		// check if second argument is an ls argument //
+		if ( arguments[0] != '-' )
+		{
+			fprintf(stderr, "!!! (ls) missing argument\n ls <arguments> <directory>\n");
+			return TCL_ERROR;
+		}
 	
 		// get ls path //
 		ls_path = Tcl_GetStringFromObj(argv[2], &dir_length);
 		if (ls_path == NULL)
 		{
 			fprintf(stderr, "!!!Error while aquaring arguments  \n");
+			return TCL_ERROR;
+		}
+		// check if third argument is a directory //
+		if ( ls_path[0] == '-' )
+		{
+			fprintf(stderr, "!!! (ls) missing directory\n ls <arguments> <directory>\n");
 			return TCL_ERROR;
 		}
 
