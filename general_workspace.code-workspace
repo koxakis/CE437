@@ -7,5 +7,10 @@
 			"path": "/home/nikolas/Documents/cad"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.cu": "cpp",
+			"readline_functions.h": "c"
+		}
+	}
 }

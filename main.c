@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		// make shell green and arrow white //
-		line = readline("\x1B[32m>TCL_shell\x1B[37m $ ");
+		line = readline("\x1B[32m>TCL_shell\x1B[37m £ ");
 
 		// if line is null quit //
 		if (line == NULL)

@@ -118,12 +118,6 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
 			return TCL_ERROR;
 		}
-		// check if third argument is a directory //
-		if ( ls_path[0] == '-' )
-		{
-			fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <arguments> <directory>\n");
-			return TCL_ERROR;
-		}
 
 		com_command = (char *) malloc((arg_length + dir_length) * sizeof(char));
 		if (com_command == NULL)
@@ -144,11 +138,11 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		}
 
 		// check if second argument is not a directory //
-		if ( ls_path[0] == '-' )
-		{
-			fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <directory>\n");
-			return TCL_ERROR;
-		}
+		//if ( ls_path[0] == '-' )
+		//{
+		//	fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <directory>\n");
+		//	return TCL_ERROR;
+		//}
 
 		com_command = (char *) malloc((dir_length) * sizeof(char));
 		if (com_command == NULL)
