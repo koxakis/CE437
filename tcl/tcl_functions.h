@@ -1,7 +1,7 @@
 /*************************************************************************************/
 //											CE437   																			  
 //									  Nikolas Koxenoglou																		
-// 											   																														 
+//		 							TCL function prototypes 				   																														 
 /*************************************************************************************/
 #include <tcl8.6/tcl.h>
 
@@ -21,8 +21,8 @@ int init_interpreter();
 // delete created interpreter //
 int del_interpreter();
 
-// display the contents of a file //
-int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
-
 // display the given directory's containts //
 int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+// display the contents of a file //
+int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);

@@ -1,7 +1,7 @@
 /*************************************************************************************/
 //											CE437   																			  
 //									  Nikolas Koxenoglou																		
-// 											   																														 
+// 										main program		   																														 
 /*************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
 	int expansion_res;
 	int tcl_res;
-	char *text_expantion;
+	char *text_expantion=NULL;
 	// line for readline use //
 	char *line=NULL;
 	char *clean_line=NULL;
@@ -40,14 +40,14 @@ int main(int argc, char *argv[])
 
 	printf("*****************************\n");
 	printf("CE437\n");
-	printf("CAD1 shell		\n");
-	printf("Nikolas Koxenoglou	\n");
+	printf("CAD1 shell\n");
+	printf("Nikolas Koxenoglou\n");
 	printf("*****************************\n");
 	
 	while(1)
 	{
 		// make shell green and arrow white //
-		line = readline("\x1B[32m CAD1_shell \x1B[37m-> ");
+		line = readline("\x1B[32m>CAD1_shell\x1B[37m->");
 
 		// if line is null quit //
 		if (line == NULL)
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		clean_line = stripwhite(line);
 
 		// expand history //
-		expansion_res = history_expand(line, &text_expantion);
+		expansion_res = history_expand(clean_line, &text_expantion);
 		
 		// in case of history expantion error //
 		if ( expansion_res == -1)
@@ -72,15 +72,23 @@ int main(int argc, char *argv[])
 		// no expantion needed or do not exeute yet //
 		else if ( (expansion_res == 0) || (expansion_res == 2) ) 
 		{
-			add_history(clean_line);
-			// store command //
-			strcpy(command, line);
+			// don't add empty lines in history
+			if ( clean_line && *clean_line)
+			{
+				add_history(clean_line);
+				// store command //
+				strcpy(command, line);
+			}
 		} 
 		else 
 		{
-			add_history(text_expantion);
-			// store command //
-			strcpy(command, text_expantion);
+			// don't add empty lines in history
+			if ( clean_line && *clean_line)
+			{
+				add_history(text_expantion);
+				// store command //
+				strcpy(command, text_expantion);
+			}
 		}
 		free (text_expantion);
 		free (line);
@@ -111,17 +119,21 @@ int main(int argc, char *argv[])
 		else // run the tcl //
 		{	
 			// evaluate tcl commands //
-			tcl_res = Tcl_Eval(interpreter, command);
-			if (tcl_res == TCL_ERROR)
+			if ( clean_line && *clean_line && clean_line != NULL)
 			{
-				fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
-			} 
-			else if (tcl_res == TCL_OK)
-			{
-				// returns the result for interpreter as a string if there is one //
-				if (*Tcl_GetStringResult(interpreter) != '\0')
+				tcl_res = Tcl_Eval(interpreter, command);
+				if (tcl_res == TCL_ERROR)
 				{
-		        	printf("%s\n", Tcl_GetStringResult(interpreter));
+					fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
+				} 
+				else if (tcl_res == TCL_OK)
+				{
+					// returns the result for interpreter as a string if there is one //
+					if (*Tcl_GetStringResult(interpreter) != '\0')
+					{
+		       		 	printf("%s\n", Tcl_GetStringResult(interpreter));
+					}
+
 				}
 			}
 		}	

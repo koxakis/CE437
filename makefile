@@ -13,7 +13,7 @@ readline/readline_functions.o: readline/readline_functions.c readline/readline_f
 tcl/tcl_functions.o: tcl/tcl_functions.c tcl/tcl_functions.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-# clean stuff 
+# clean
 clean_obj:
 	rm $(OBJ) 
 

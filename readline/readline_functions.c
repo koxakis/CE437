@@ -1,7 +1,7 @@
 /*************************************************************************************/
 //											CE437   																			  
 //									  Nikolas Koxenoglou																		
-// 											   																														 
+// 						implemented readline and autocomplete functions		   																														 
 /*************************************************************************************/
 #include <stdio.h>
 #include <string.h>
@@ -57,6 +57,7 @@ void init_readline(){
 
 	rl_completion_append_character = '\0';
 
+	// initialise history function // 
 	using_history();
 }
 
