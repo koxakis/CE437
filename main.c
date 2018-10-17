@@ -40,14 +40,14 @@ int main(int argc, char *argv[])
 
 	printf("*****************************\n");
 	printf("CE437\n");
-	printf("CAD1 shell\n");
+	printf("CAD1 TCL shell\n");
 	printf("Nikolas Koxenoglou\n");
 	printf("*****************************\n");
 	
 	while(1)
 	{
 		// make shell green and arrow white //
-		line = readline("\x1B[32m>CAD1_shell\x1B[37m->");
+		line = readline("\x1B[32m>TCL_shell\x1B[37m $ ");
 
 		// if line is null quit //
 		if (line == NULL)
