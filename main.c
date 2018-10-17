@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 			{
 				add_history(clean_line);
 				// store command //
-				strcpy(command, line);
+				strcpy(command, clean_line);
 			}
 		} 
 		else 
