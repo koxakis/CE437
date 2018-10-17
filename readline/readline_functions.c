@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dirent.h>
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -87,35 +86,14 @@ char *command_gen(const char *text, int state)
 	static int index_list;
 	// input text length //
 	static int length;
-	DIR *directory;
-	struct dirent *directory_struct;
 
 	char *name = NULL;
 
 	// initialize word, if this is a new word to complete, and //
 	// set index to 0 //
 	if (!state) {
-		directory = opendir(".");
-		if (directory == NULL)
-		{
-			fprintf(stderr, "\x1B[31m!!!Error in opening dir \n");
-			return NULL;
-		}
 		index_list = 0;
 		length = strlen(text);
-	}
-	if (!state) 
-	{
-		while ( ( (directory_struct = readdir(directory)) != NULL) )
-		{
-			name = directory_struct->d_name;
-			if ( strncmp(name, text, length) == 0 ) 
-			{
-				// if found, return string //
-				return strdup(name);
-			}
-
-		}
 	}
 
 	// match name from command list until NULL //
@@ -139,21 +117,25 @@ char *command_gen(const char *text, int state)
 // return a pointer into STRING. //
 char *stripwhite (char *string)
 {
-   register char *s, *t;
+	register char *s, *t;
 
-   for (s = string; isspace (*s); s++);
+	// scans for whitespace characters //
+	for (s = string; isspace (*s); s++);
 
-   if (*s == 0)
-   {
-    	return (s);
-   }
+	// if the string is empty return //
+	if (*s == 0)
+	{
+		return (s);
+	}
 
-   t = s + strlen (s) - 1;
-   while (t > s && isspace (*t))
-   {
+	// remove whitespace from the start of the string //
+	t = s + strlen (s) - 1;
+	while (t > s && isspace (*t))
+	{
 		t--;
-   }
-   *++t = '\0';
+	}
+	// add \0 to the end //
+	*++t = '\0';
 
    return s;
 }

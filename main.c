@@ -58,6 +58,12 @@ int main(int argc, char *argv[])
 
 		// clean whitespaces from input //
 		clean_line = stripwhite(line);
+		// skip tcl evaluation when user presses enter without a command //
+		// in order to avoid tcl eval error on empty command //
+		if (strlen(clean_line) == 0 )
+		{
+			continue;
+		}
 
 		// expand history //
 		expansion_res = history_expand(clean_line, &text_expantion);
@@ -119,23 +125,20 @@ int main(int argc, char *argv[])
 		else // run the tcl //
 		{	
 			// evaluate tcl commands //
-			if ( clean_line && *clean_line && clean_line != NULL)
+			tcl_res = Tcl_Eval(interpreter, command);
+			if (tcl_res == TCL_ERROR)
 			{
-				tcl_res = Tcl_Eval(interpreter, command);
-				if (tcl_res == TCL_ERROR)
+				fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
+			} 
+			else if (tcl_res == TCL_OK)
+			{
+				// returns the result for interpreter as a string if there is one //
+				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
-					fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
-				} 
-				else if (tcl_res == TCL_OK)
-				{
-					// returns the result for interpreter as a string if there is one //
-					if (*Tcl_GetStringResult(interpreter) != '\0')
-					{
-		       		 	printf("%s\n", Tcl_GetStringResult(interpreter));
-					}
-
+		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));
 				}
 			}
+
 		}	
 	}
 	free (clean_line);
