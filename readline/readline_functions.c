@@ -104,7 +104,6 @@ char *command_gen(const char *text, int state)
 		index_list = 0;
 		length = strlen(text);
 	}
-
 	if (!state) 
 	{
 		while ( ( (directory_struct = readdir(directory)) != NULL) )
