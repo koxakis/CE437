@@ -90,7 +90,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 	int arg_length=0;
 
 	// protect from segmentation faults by checking the arguments //
-	if ( (argc > 3) || (argc < 2) )
+	if ( (argc > 3) )
 	{
 		fprintf(stderr, "\x1B[31m!!! (ls) not enough arguments \n\x1B[37m ls <arg> <directory> \nor ls <directory>\n");
 		return TCL_ERROR;
@@ -115,7 +115,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		ls_path = Tcl_GetStringFromObj(argv[2], &dir_length);
 		if (ls_path == NULL)
 		{
-			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
+			fprintf(stderr, "\x1B[31m!!!Error while aquaring path  \n");
 			return TCL_ERROR;
 		}
 
@@ -133,16 +133,9 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 		ls_path = Tcl_GetStringFromObj(argv[1], &dir_length);
 		if (ls_path == NULL)
 		{
-			fprintf(stderr, "\x1B[31m!!!Error while aquaring arguments  \n");
+			fprintf(stderr, "\x1B[31m!!!Error while aquaring path  \n");
 			return TCL_ERROR;
 		}
-
-		// check if second argument is not a directory //
-		//if ( ls_path[0] == '-' )
-		//{
-		//	fprintf(stderr, "\x1B[31m!!! (ls) missing directory\n\x1B[37m ls <directory>\n");
-		//	return TCL_ERROR;
-		//}
 
 		com_command = (char *) malloc((dir_length) * sizeof(char));
 		if (com_command == NULL)
@@ -151,6 +144,16 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			return TCL_ERROR;
 		}	
 		sprintf(com_command, "%s %s", command, ls_path);
+	}
+	else if ( argc == 1)
+	{
+		com_command = (char *) malloc((3) * sizeof(char));
+		if (com_command == NULL)
+		{
+			fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
+			return TCL_ERROR;
+		}	
+		sprintf(com_command, "%s", command);		
 	}
 
 	// send command to System //

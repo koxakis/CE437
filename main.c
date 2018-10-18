@@ -129,6 +129,12 @@ int main(int argc, char *argv[])
 			if (tcl_res == TCL_ERROR)
 			{
 				fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
+                // returns the result for interpreter as a string if there is one //
+				if (*Tcl_GetStringResult(interpreter) != '\0')
+				{
+		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));
+				}
+
 			} 
 			else if (tcl_res == TCL_OK)
 			{
