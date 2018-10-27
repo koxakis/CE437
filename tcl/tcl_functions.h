@@ -34,3 +34,4 @@ int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 int supercube_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
+int cube_cover_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
