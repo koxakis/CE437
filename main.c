@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "tcl/tcl_functions.h"
 #include "readline/readline_functions.h"
@@ -133,8 +134,9 @@ int main(int argc, char *argv[])
 				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
 		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));
+					// free result //
+					Tcl_ResetResult(interpreter);
 				}
-
 			} 
 			else if (tcl_res == TCL_OK)
 			{
@@ -142,9 +144,9 @@ int main(int argc, char *argv[])
 				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
 		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));
+					Tcl_ResetResult(interpreter);
 				}
 			}
-
 		}	
 	}
 	free (clean_line);

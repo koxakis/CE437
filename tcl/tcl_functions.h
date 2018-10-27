@@ -3,7 +3,7 @@
 //									  Nikolas Koxenoglou																		
 //		 							TCL function prototypes 				   																														 
 /*************************************************************************************/
-#include <tcl8.6/tcl.h>
+#include <tcl.h>
 
 #define WHITE "\x1B[37m"
 #define RED "\x1B[31m"
@@ -26,3 +26,8 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 
 // display the contents of a file //
 int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+// //
+int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
