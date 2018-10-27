@@ -28,6 +28,7 @@ int init_interpreter()
 
 	Tcl_CreateObjCommand(interpreter, "cube_intersect_2", cube_intersect_2, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "distance_2", distance_2, NULL, NULL);
+	Tcl_CreateObjCommand(interpreter, "supercube_2", supercube_2, NULL, NULL);
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
@@ -195,6 +196,7 @@ int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, T
 	cube_2 = Tcl_GetStringFromObj(argv[2], &cube_2_length);
 
 	// check if even and length requirements are met //
+	// IN_FUNC //
 	if ( cube_1_length != cube_2_length )
 	{
 		fprintf(stderr, "\x1B[31m!!!(cube_intersect_2) not same length cubes\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
@@ -213,6 +215,7 @@ int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, T
 		return TCL_ERROR;
 	}
 	// check string and appent accordingly //
+	// IN_FUNC //
 	for (i=0; i<cube_1_length; i++)
 	{
 		if ((cube_1[i] == '1') && (cube_2[i] == '1') )
@@ -237,11 +240,177 @@ int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, T
 	// Tcl_SetResult will make a copy of the string in dynamically allocated storage // 
 	// and arrange for the copy to be the result for the current Tcl command //
 	Tcl_SetResult(interpreter, bit_wise_result, TCL_VOLATILE);
-
+	free(bit_wise_result);
 	return TCL_OK;
 }
 
 int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
+
+	char *cube_1=NULL;
+	int cube_1_length=0;
+
+	char *cube_2=NULL;
+	int cube_2_length=0;
+
+	char *bit_wise_result=NULL;
+	char *return_total_zeros=NULL;
+
+	int i;
+	int total_zeros=0;
+
+	if (argc > 3)
+	{
+		fprintf(stderr, "\x1B[31m!!! (cube_intersect_2) missing arguments\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+
+	// get cube 1 data //
+	cube_1 = Tcl_GetStringFromObj(argv[1], &cube_1_length);
+
+	// get cube 2 data //
+	cube_2 = Tcl_GetStringFromObj(argv[2], &cube_2_length);
+
+	// check if even and length requirements are met //
+	// IN_FUNC //
+	if ( cube_1_length != cube_2_length )
+	{
+		fprintf(stderr, "\x1B[31m!!!(cube_intersect_2) not same length cubes\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+	else if ( ((cube_1_length % 2)!=0) || ((cube_2_length % 2)!=0) )
+	{
+		fprintf(stderr, "\x1B[31m!!!(cube_intersect_2) not even length cubes\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+
+	bit_wise_result = (char *) calloc(cube_1_length,sizeof(char));
+	if (bit_wise_result == NULL)
+	{
+		fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
+		return TCL_ERROR;
+	}
+	// check string and appent accordingly //
+	// IN_FUNC //
+	for (i=0; i<cube_1_length; i++)
+	{
+		if ((cube_1[i] == '1') && (cube_2[i] == '1') )
+		{
+			strcat(bit_wise_result,"1");
+		}
+		else if ((cube_1[i] == '0') && (cube_2[i] == '0') )
+		{
+			strcat(bit_wise_result,"0");
+		}
+		else if ((cube_1[i] == '1') && (cube_2[i] == '0') )
+		{
+			strcat(bit_wise_result,"0");
+		}
+		else if ((cube_1[i] == '0') && (cube_2[i] == '1') )
+		{
+			strcat(bit_wise_result,"0");
+		}
+	}
+
+	for (i=0; i<cube_1_length-1; i=i+2)
+	{
+		if ((bit_wise_result[i] == '0') && (bit_wise_result[i+1] == '0') )
+		{
+			total_zeros++;
+		}
+	}
+	return_total_zeros = (char *) calloc(cube_1_length,sizeof(char));
+	if (return_total_zeros == NULL)
+	{
+		fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
+		return TCL_ERROR;
+	}
+
+
+	sprintf(return_total_zeros, "%d", total_zeros);
+
+	// Sets the result for the current command as Tcl_FreeProc TCL_VOLATILE states //
+	// Tcl_SetResult will make a copy of the string in dynamically allocated storage // 
+	// and arrange for the copy to be the result for the current Tcl command //
+	Tcl_SetResult(interpreter, return_total_zeros, TCL_VOLATILE);
+
+	free(bit_wise_result);
+	free(return_total_zeros);
+
 	return TCL_OK;
+}
+
+int supercube_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+
+	char *cube_1=NULL;
+	int cube_1_length=0;
+
+	char *cube_2=NULL;
+	int cube_2_length=0;
+
+	char *bit_wise_result=NULL;
+
+	int i;
+	//int return_result_length=0;
+
+	if (argc > 3)
+	{
+		fprintf(stderr, "\x1B[31m!!! (cube_intersect_2) missing arguments\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+
+	// get cube 1 data //
+	cube_1 = Tcl_GetStringFromObj(argv[1], &cube_1_length);
+
+	// get cube 2 data //
+	cube_2 = Tcl_GetStringFromObj(argv[2], &cube_2_length);
+
+	// check if even and length requirements are met //
+	// IN_FUNC //
+	if ( cube_1_length != cube_2_length )
+	{
+		fprintf(stderr, "\x1B[31m!!!(cube_intersect_2) not same length cubes\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+	else if ( ((cube_1_length % 2)!=0) || ((cube_2_length % 2)!=0) )
+	{
+		fprintf(stderr, "\x1B[31m!!!(cube_intersect_2) not even length cubes\n\x1B[37m cube_intersect_2 <cube 1> <cube 2>\n");
+		return TCL_ERROR;
+	}
+
+	bit_wise_result = (char *) calloc(cube_1_length,sizeof(char));
+	if (bit_wise_result == NULL)
+	{
+		fprintf(stderr, "\x1B[31m!!!Error in memory allocation \n");
+		return TCL_ERROR;
+	}
+	// check string and appent accordingly //
+	// IN_FUNC //
+	for (i=0; i<cube_1_length; i++)
+	{
+		if ((cube_1[i] == '1') && (cube_2[i] == '1') )
+		{
+			strcat(bit_wise_result,"1");
+		}
+		else if ((cube_1[i] == '0') && (cube_2[i] == '0') )
+		{
+			strcat(bit_wise_result,"0");
+		}
+		else if ((cube_1[i] == '1') && (cube_2[i] == '0') )
+		{
+			strcat(bit_wise_result,"1");
+		}
+		else if ((cube_1[i] == '0') && (cube_2[i] == '1') )
+		{
+			strcat(bit_wise_result,"1");
+		}
+	}
+
+	// Sets the result for the current command as Tcl_FreeProc TCL_VOLATILE states //
+	// Tcl_SetResult will make a copy of the string in dynamically allocated storage // 
+	// and arrange for the copy to be the result for the current Tcl command //
+	Tcl_SetResult(interpreter, bit_wise_result, TCL_VOLATILE);
+	free(bit_wise_result);
+	return TCL_OK;	
 }
