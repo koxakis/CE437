@@ -486,7 +486,6 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 	int not_cube2[2];
 	int check_if_zero[2];
 	unsigned long i, j, sync_i_j;
-	char *temp_check=NULL;
 
 
 	for (i=0; i<cube_1_length/2; i++)
@@ -521,6 +520,12 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 				if( ( check_if_zero[0] == 0) && ( check_if_zero[1] == 0) ) 
 				{
 					final_cubes[i] = (char*)realloc(final_cubes[i], sizeof(char) );
+					if (final_cubes[i] == NULL)
+					{
+						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+						return TCL_ERROR;
+					}
+					final_cubes[i] = "\0";
 					break;
 				}
 				else
@@ -579,7 +584,10 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 	}
 
 	// perform sharp ( # )
-	sharp_2_helper_function(final_cubes, cube_1, cube_2, cube_1_length, cube_2_length);
+	if( (sharp_2_helper_function(final_cubes, cube_1, cube_2, cube_1_length, cube_2_length)) == TCL_ERROR)
+	{
+		return TCL_ERROR;
+	}
 
 	for (i=0; i<(cube_1_length/2); i++ )
 	{
@@ -588,7 +596,11 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 
 	for (i=0; i<(cube_1_length/2); i++ )
 	{
-		free(final_cubes[i]);
+		if( strcmp(final_cubes[i],"\0")!=0 )
+		{
+			free(final_cubes[i]);
+		}
+		
 	}
 
 	free(final_cubes);
