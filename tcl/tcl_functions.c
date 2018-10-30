@@ -509,9 +509,10 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 			check_if_zero[0] = ( (cube_1[j]-'0') & not_cube2[0] ) ;
 			check_if_zero[1] = ( (cube_1[j+1]-'0') & not_cube2[1] ) ;
 
+			// i iterates half the length of j, in order to maintain the two by two check in the cubes //
+			// a sync variable is added to i to keep track of the diagonal //
 			if (j != (i+sync_i_j) )
 			{
-
 				final_cubes[i][j] = cube_1[j];
 				final_cubes[i][j+1] = cube_1[j+1];
 			}
