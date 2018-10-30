@@ -5,8 +5,14 @@
 /*************************************************************************************/
 #include <tcl.h>
 
-#define WHITE "\x1B[37m"
-#define RED "\x1B[31m"
+#define NRM  "\x1B[0m"		// Normal Color
+#define RED  "\x1B[31m"		// Red Color
+#define GRN  "\x1B[32m"		// Green Color
+#define YEL  "\x1B[33m"		// Yellow Color
+#define BLU  "\x1B[34m"		// Blue Color
+#define MAG  "\x1B[35m"		// Magenta Color
+#define CYN  "\x1B[36m"		// Cyan Color
+#define WHT "\x1B[37m"	// White Color
 
 Tcl_Interp *interpreter;
 
@@ -35,3 +41,9 @@ int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 int supercube_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int cube_cover_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);

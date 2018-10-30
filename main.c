@@ -12,6 +12,14 @@
 #include "tcl/tcl_functions.h"
 #include "readline/readline_functions.h"
 
+#define NRM  "\x1B[0m"		// Normal Color
+#define RED  "\x1B[31m"		// Red Color
+#define GRN  "\x1B[32m"		// Green Color
+#define YEL  "\x1B[33m"		// Yellow Color
+#define BLU  "\x1B[34m"		// Blue Color
+#define MAG  "\x1B[35m"		// Magenta Color
+#define CYN  "\x1B[36m"		// Cyan Color
+#define WHT "\x1B[37m"	// White Color
 
 int main(int argc, char *argv[])
 {
@@ -48,12 +56,12 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		// make shell green and arrow white //
-		line = readline("\x1B[32m>TCL_shell\x1B[37m £ ");
+		line = readline(GRN">TCL_shell £ "NRM);
 
 		// if line is null quit //
 		if (line == NULL)
 		{
-			fprintf(stderr, "\x1B[31m!!!Error in line \n");
+			fprintf(stderr, RED"!!!Error in line \n"NRM);
 			return EXIT_FAILURE;
 		}
 
@@ -72,7 +80,7 @@ int main(int argc, char *argv[])
 		// in case of history expantion error //
 		if ( expansion_res == -1)
 		{
-			fprintf(stderr, "\x1B[31m!!!Error in history expanding: %s\n", text_expantion);
+			fprintf(stderr, RED"!!!Error in history expanding: %s\n"NRM, text_expantion);
 			return EXIT_FAILURE;
 
 		}
@@ -129,7 +137,7 @@ int main(int argc, char *argv[])
 			tcl_res = Tcl_Eval(interpreter, command);
 			if (tcl_res == TCL_ERROR)
 			{
-				fprintf(stderr, "\x1B[31m!!! Error tcl command: %s\n", command);
+				fprintf(stderr, RED"!!! Error tcl command: %s\n"NRM, command);
                 // returns the result for interpreter as a string if there is one //
 				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
@@ -143,7 +151,8 @@ int main(int argc, char *argv[])
 				// returns the result for interpreter as a string if there is one //
 				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
-		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));
+		  			printf("%s\n", Tcl_GetStringResult(interpreter));
+					// free result //
 					Tcl_ResetResult(interpreter);
 				}
 			}
