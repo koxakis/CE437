@@ -4,6 +4,7 @@
 //		 							TCL function prototypes 				   																														 
 /*************************************************************************************/
 #include <tcl.h>
+#include "../readline/readline_functions.h"
 
 #define NRM  "\x1B[0m"		// Normal Color
 #define RED  "\x1B[31m"		// Red Color
@@ -16,6 +17,13 @@
 
 Tcl_Interp *interpreter;
 
+typedef struct inter_cube_list { 
+
+	char **inter_cube_res;
+	struct inter_cube_list *next;
+	struct inter_cube_list *prev;
+}inter_cube_list_T;
+
 // function prototypes //
 
 // identify or return the name of the binary file containing the application //
@@ -27,13 +35,13 @@ int init_interpreter();
 // delete created interpreter //
 int del_interpreter();
 
+// implemented TCL commands //
 // display the given directory's containts //
 int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 // display the contents of a file //
 int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
-// //
 int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
@@ -47,3 +55,12 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+// helper TCL functions //
+char **sharp_2_helper_function(char* , char *, int , int);
+int cube_cover_helper_function(char *, char *, int);
+void supercube_helper_function(char *, char *, char *, int, int);
+char *cube_intersect_helper_function(char *, char *, char *, int , int);
+int cube_check_helper_function(int , int);
+// import stripwhite from readlune_functions.h //
+extern char *stripwhite (char *);

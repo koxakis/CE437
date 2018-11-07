@@ -225,7 +225,7 @@ int cube_intersect_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, T
 
 	char *bit_wise_result=NULL;
 
-	if (argc > 3)
+	if (argc != 3)
 	{
 		fprintf(stderr, RED"!!! (cube_intersect_2) missing arguments\n\x1B[0m cube_intersect_2 <cube 1> <cube 2>\n");
 		return TCL_ERROR;
@@ -274,7 +274,7 @@ int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	int i;
 	int total_zeros=0;
 
-	if (argc > 3)
+	if (argc != 3)
 	{
 		fprintf(stderr, RED"!!! (distance_2) missing arguments\n\x1B[0m distance_2 <cube 1> <cube 2>\n");
 		return TCL_ERROR;
@@ -357,7 +357,7 @@ int supercube_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Ob
 
 	char *bit_wise_result=NULL;
 
-	if (argc > 3)
+	if (argc != 3)
 	{
 		fprintf(stderr, RED"!!! (supercube_2) missing arguments\n\x1B[0m supercube_2 <cube 1> <cube 2>\n");
 		return TCL_ERROR;
@@ -428,7 +428,7 @@ int cube_cover_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_O
 
 	int lesser_found = 0;
 
-	if (argc > 3)
+	if (argc != 3)
 	{
 		fprintf(stderr, RED"!!! (cube_cover_2) missing arguments\n\x1B[0m cube_cover_2 <cube 1> <cube 2>\n");
 		return TCL_ERROR;
@@ -481,12 +481,20 @@ int cube_cover_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_O
 	return TCL_OK;
 }
 
-int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int cube_1_length, int cube_2_length)
+char **sharp_2_helper_function(char* cube_1, char *cube_2, int cube_1_length, int cube_2_length)
 {
+	char **final_cubes=NULL;
 	int not_cube2[2];
 	int check_if_zero[2];
 	unsigned long i, j, sync_i_j;
 
+
+	final_cubes = (char **) calloc(cube_1_length,sizeof(char*));
+	if (final_cubes == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		exit(1);
+	}
 
 	for (i=0; i<cube_1_length/2; i++)
 	{
@@ -494,7 +502,7 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 		if (final_cubes[i] == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
+			exit(1);
 		}
 	}
 
@@ -506,6 +514,7 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 			not_cube2[0] = !(cube_2[j]-'0');
 			not_cube2[1] = !(cube_2[j+1]-'0');
 			
+			// check if the result is 00 before assigning it //
 			check_if_zero[0] = ( (cube_1[j]-'0') & not_cube2[0] ) ;
 			check_if_zero[1] = ( (cube_1[j+1]-'0') & not_cube2[1] ) ;
 
@@ -513,18 +522,20 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 			// a sync variable is added to i to keep track of the diagonal //
 			if (j != (i+sync_i_j) )
 			{
+				// assign not diagonal values //
 				final_cubes[i][j] = cube_1[j];
 				final_cubes[i][j+1] = cube_1[j+1];
 			}
 			else
 			{
+				// if an illegal 00 is detected, the memory is released and the siring is assigned to \0 //
 				if( ( check_if_zero[0] == 0) && ( check_if_zero[1] == 0) ) 
 				{
 					final_cubes[i] = (char*)realloc(final_cubes[i], sizeof(char) );
 					if (final_cubes[i] == NULL)
 					{
 						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						return TCL_ERROR;
+						exit(1);
 					}
 					final_cubes[i] = "\0";
 					break;
@@ -540,8 +551,8 @@ int sharp_2_helper_function(char **final_cubes, char* cube_1, char *cube_2, int 
 		sync_i_j++;
 	}
 
-	//return final_cubes;
-	return TCL_OK;
+	return final_cubes;
+	//return TCL_OK;
 }
 
 int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
@@ -555,7 +566,6 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 	int cube_2_length=0;
 
 	char **final_cubes=NULL;
-
 
 	unsigned long i;
 	//int return_result_length=0;
@@ -577,22 +587,15 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 	{
 		return TCL_ERROR;
 	}
-	final_cubes = (char **) calloc(cube_1_length,sizeof(char*));
-	if (final_cubes == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
-
 	// perform sharp ( # )
-	if( (sharp_2_helper_function(final_cubes, cube_1, cube_2, cube_1_length, cube_2_length)) == TCL_ERROR)
-	{
-		return TCL_ERROR;
-	}
+	final_cubes =  sharp_2_helper_function(cube_1, cube_2, cube_1_length, cube_2_length);
 
 	for (i=0; i<(cube_1_length/2); i++ )
 	{
-		printf(" %s \n", final_cubes[i]);
+		if( strcmp(final_cubes[i],"\0")!=0 )
+		{
+			printf("%s\n", final_cubes[i]);
+		}
 	}
 
 	for (i=0; i<(cube_1_length/2); i++ )
@@ -600,10 +603,8 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 		if( strcmp(final_cubes[i],"\0")!=0 )
 		{
 			free(final_cubes[i]);
-		}
-		
+		}	
 	}
-
 	free(final_cubes);
 
 	return TCL_OK;
@@ -611,6 +612,91 @@ int sharp_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *c
 
 int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
+	//char **sharp_2_cubes=NULL;
+	inter_cube_list_T *final_cubes=NULL;
+	inter_cube_list_T *curr=NULL;
+	inter_cube_list_T *curr_temp=NULL;
+	char *cube_1=NULL;
+	char *list_f_in=NULL;
+	char *token=NULL;
+	char delim[2]=",";
+
+	int cube_1_length;
+	int list_f_in_length;
+	int i;
+
+	cube_1 = Tcl_GetStringFromObj(argv[1], &cube_1_length);
+	list_f_in = Tcl_GetStringFromObj(argv[2], &list_f_in_length);
+
+	// find the first appearance of delimeter in given list //
+	token = strtok(list_f_in, delim);
+
+	final_cubes = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
+	if (final_cubes == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		exit(1);
+	}
+	final_cubes->next=final_cubes;
+	final_cubes->prev=final_cubes;
+
+	while (token != NULL)
+	{
+		// remove any whitespace character from cube //
+		token = stripwhite(token);
+			// check if even and length requirements are met //
+		if( cube_check_helper_function(cube_1_length, (int)strlen(token)) == TCL_ERROR)
+		{
+			return TCL_ERROR;
+		}
+
+		curr = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
+		if (curr == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			exit(1);
+		}	
+		curr->next = final_cubes->next;
+		curr->prev = final_cubes;
+
+		curr->next->prev = curr;
+		curr->prev->next = curr;
+
+		curr->inter_cube_res = sharp_2_helper_function(cube_1, token, cube_1_length, (int)strlen(token));
+
+
+		// find next cube in list //
+		token = strtok(NULL, delim);
+	}
+
+	for(curr=final_cubes->next; curr!=final_cubes; curr= curr->next)
+	{
+		printf("Result set :\n");
+		for(i=0; i<cube_1_length/2; i++)
+		{
+			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			{
+				printf("%s \n", curr->inter_cube_res[i]);
+			}
+		}
+	}
+
+	curr= final_cubes->next;
+	while (curr != final_cubes)
+	{
+		for(i=0; i<cube_1_length/2; i++)
+		{
+			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			{
+				free(curr->inter_cube_res[i]);
+			}
+		}
+		curr_temp = curr;
+		curr = curr->next;
+		free(curr_temp);
+	}
+	free(final_cubes);
+
 	return TCL_OK;
 }
 

@@ -15,7 +15,7 @@
 char *commands_list[]= {
 	// my commands //
 	"ls", "less", "history", "quit", "cube_intersect_2", "supercube_2", 
-	"distance_2", "cube_cover_2", "sharp_2", "sharp", "OFF_f",
+	"distance_2", "cube_cover_2", "sharp_2", "sharp", "off_f",
 	// standard tcl command for TCL8.6//
 	"after", "errorInfo", "load", "re_syntax", "tcl_startOfNextWord",
 	"append","eval","lrange","read","tcl_startOfPreviousWord",
