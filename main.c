@@ -30,6 +30,12 @@ int main(int argc, char *argv[])
 	// line for readline use //
 	char *line=NULL;
 	char *clean_line=NULL;
+	char *shell_prompt=NULL;
+
+	char hostname[HOST_NAME_MAX];
+	char username[LOGIN_NAME_MAX];
+	gethostname(hostname, HOST_NAME_MAX);
+	getlogin_r(username, LOGIN_NAME_MAX);
 
 	// readline/hostory.h internal struct //
 	HIST_ENTRY **the_history_list; // readline commands history list - NULL terminated //
@@ -49,14 +55,25 @@ int main(int argc, char *argv[])
 
 	printf("*****************************\n");
 	printf("CE437\n");
-	printf("CAD1 TCL shell\n");
+	printf("CAD1 TCL Shell\n");
 	printf("Nikolas Koxenoglou\n");
-	printf("*****************************\n");
+	printf("\nYou are logged in as User: %s \n", username);
+	printf("On machine with hostname: %s\n", hostname);
+	printf("*****************************\n\n");
 	
 	while(1)
 	{
+		shell_prompt = (char*)malloc(sizeof(char)*(HOST_NAME_MAX+25) );
+		if(shell_prompt == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return EXIT_FAILURE;			
+		}
+
+		sprintf(shell_prompt,GRN"TCL Shell@%s £ "NRM, hostname);
 		// make shell green and arrow white //
-		line = readline(GRN">TCL_shell £ "NRM);
+		//line = readline(GRN">TCL_shell £ "NRM);
+		line = readline(shell_prompt);
 
 		// if line is null quit //
 		if (line == NULL)
@@ -111,6 +128,8 @@ int main(int argc, char *argv[])
 		// display exit message for all the available proper exit methods //
 		if ( (strcmp(command, "quit") == 0) || (strcmp(command, "exit") == 0) || (strcmp(command, "q") == 0) ) 
 		{
+			free (clean_line);
+			free(shell_prompt);
 			del_interpreter();
 			printf ("\nGood bye !!!\n");
 			return EXIT_SUCCESS;
@@ -159,5 +178,6 @@ int main(int argc, char *argv[])
 		}	
 	}
 	free (clean_line);
+	free(shell_prompt);
 	return EXIT_FAILURE;
 }

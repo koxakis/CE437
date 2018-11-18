@@ -59,8 +59,8 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 // helper TCL functions //
 char **sharp_2_helper_function(char* , char *, int , int);
 int cube_cover_helper_function(char *, char *, int);
-void supercube_helper_function(char *, char *, char *, int, int);
-char *cube_intersect_helper_function(char *, char *, char *, int , int);
-int cube_check_helper_function(int , int);
+char *supercube_helper_function(char *, char *, int, int);
+char *cube_intersect_helper_function(char *, char *, int , int);
+int cube_check_helper_function(int, int);
 // import stripwhite from readlune_functions.h //
 extern char *stripwhite (char *);
