@@ -57,12 +57,11 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 // helper TCL functions //
-int do_sharp_2(char ***,char* , char *, int , int);
+int do_sharp_2(char **,char* , char *, int , int);
 int count_zeros(char *, int);
 int do_cube_cover(char *, char *, int);
-void do_supercube(char **, char *, char *, int, int);
-void do_cube_intersect(char **, char *, char *, int , int);
+void do_supercube(char *, char *, char *, int, int);
+void do_cube_intersect(char *, char *, char *, int , int);
 int cube_check_helper_function(int, int);
-int create_list_of_sharps(inter_cube_list_T **,char *, char *, char *, int );
 // import stripwhite from readlune_functions.h //
 extern char *stripwhite (char *);
