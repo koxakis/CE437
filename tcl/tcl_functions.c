@@ -38,9 +38,9 @@ int init_interpreter()
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
 		fprintf(stderr, RED"!!!Error while creating interpreter  \n"NRM);
-		return EXIT_FAILURE;
+		return TCL_ERROR;
 	}
-	return EXIT_SUCCESS;
+	return TCL_ERROR;
 }
 
 // delete created interpreter //
@@ -48,7 +48,7 @@ int del_interpreter()
 {
 	Tcl_FreeResult(interpreter);
 	Tcl_DeleteInterp(interpreter);
-	return EXIT_SUCCESS;
+	return TCL_ERROR;
 }
 
 // display the contents of a file //
@@ -313,7 +313,7 @@ int distance_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	if (bit_wise_result == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		exit(1);
+		return TCL_ERROR;
 	}
 
 	// check string and appent accordingly for cube_intersect_2 //
@@ -394,7 +394,7 @@ int supercube_2(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Ob
 	if (bit_wise_result == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		exit(1);
+		return TCL_ERROR;
 	}
 
 	// check string and appent accordingly //
@@ -698,7 +698,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 		if (curr == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			exit(1);
+			return TCL_ERROR;
 		}	
 		curr->next = head->next;
 		curr->prev = head;
@@ -823,7 +823,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 					if (temp_result[temp_res_index] == NULL)
 					{
 						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						exit(1);
+						return TCL_ERROR;
 					}
 					temp_result[temp_res_index] = "\0";
 					continue;
