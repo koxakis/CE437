@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 	// line for readline use //
 	char *line=NULL;
 	char *clean_line=NULL;
-	char *shell_prompt=NULL;
 
 	char hostname[HOST_NAME_MAX];
 	char username[LOGIN_NAME_MAX];
@@ -63,17 +62,8 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
-		shell_prompt = (char*)malloc(sizeof(char)*(HOST_NAME_MAX+25) );
-		if(shell_prompt == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return EXIT_FAILURE;			
-		}
-
-		sprintf(shell_prompt,GRN"TCL Shell@%s £ "NRM, hostname);
 		// make shell green and arrow white //
-		//line = readline(GRN">TCL_shell £ "NRM);
-		line = readline(shell_prompt);
+		line = readline(GRN">TCL_shell £ "NRM);
 
 		// if line is null quit //
 		if (line == NULL)
@@ -84,6 +74,7 @@ int main(int argc, char *argv[])
 
 		// clean whitespaces from input //
 		clean_line = stripwhite(line);
+
 		// skip tcl evaluation when user presses enter without a command //
 		// in order to avoid tcl eval error on empty command //
 		if (strlen(clean_line) == 0 )
@@ -123,13 +114,11 @@ int main(int argc, char *argv[])
 			}
 		}
 		free (text_expantion);
-		free (line);
 
 		// display exit message for all the available proper exit methods //
 		if ( (strcmp(command, "quit") == 0) || (strcmp(command, "exit") == 0) || (strcmp(command, "q") == 0) ) 
 		{
 			free (clean_line);
-			free(shell_prompt);
 			del_interpreter();
 			printf ("\nGood bye !!!\n");
 			return EXIT_SUCCESS;
@@ -178,6 +167,5 @@ int main(int argc, char *argv[])
 		}	
 	}
 	free (clean_line);
-	free(shell_prompt);
 	return EXIT_FAILURE;
 }
