@@ -52,13 +52,14 @@ int main(int argc, char *argv[])
 	// initialize readline and set custom completer //
 	init_readline();
 
-	printf("*****************************\n");
-	printf("CE437\n");
-	printf("CAD1 TCL Shell\n");
-	printf("Nikolas Koxenoglou\n");
-	printf("\nYou are logged in as User: %s \n", username);
-	printf("On machine with hostname: %s\n", hostname);
-	printf("*****************************\n\n");
+	printf("*************************************************\n");
+	printf("*	CE437					*\n");
+	printf("*	CAD1 TCL Shell				*\n");
+	printf("*	Nikolas Koxenoglou			*\n");
+	printf("*						*\n");
+	printf("*	You are logged in as user: %s	*\n", username);
+	printf("*	On machine with hostname: %s		*\n", hostname);
+	printf("*************************************************\n\n");
 	
 	while(1)
 	{
