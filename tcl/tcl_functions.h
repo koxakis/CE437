@@ -62,6 +62,6 @@ int count_zeros(char *, int);
 int do_cube_cover(char *, char *, int);
 void do_supercube(char *, char *, char *, int, int);
 void do_cube_intersect(char *, char *, char *, int , int);
-int cube_check_helper_function(int, int);
+int do_cube_check(int, int);
 // import stripwhite from readlune_functions.h //
 extern char *stripwhite (char *);

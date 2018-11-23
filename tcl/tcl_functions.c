@@ -569,7 +569,6 @@ int do_sharp_2(char **final_cubes,char* cube_1, char *cube_2, int cube_1_length,
 		sync_i_j++;
 	}
 
-	//return final_cubes;
 	return TCL_OK;
 }
 
@@ -838,7 +837,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 		if (old_result == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			exit(1);
+			return TCL_ERROR;
 		}
 		for (i=0; i<temp_memory_size; i++)
 		{
@@ -846,7 +845,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 			if (old_result[i] == NULL)
 			{
 				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				exit(1);
+				return TCL_ERROR;
 			}
 		}
 		for (i=0; i<temp_memory_size; i++)
@@ -866,7 +865,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 		if (temp_result == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			exit(1);
+			return TCL_ERROR;
 		}
 		for (i=0; i<temp_memory_size; i++)
 		{
@@ -874,7 +873,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 			if (temp_result[i] == NULL)
 			{
 				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				exit(1);
+				return TCL_ERROR;
 			}
 		}
 		// reset temp_res_index for next node //
@@ -900,7 +899,7 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 					if (old_result[j] == NULL)
 					{
 						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						exit(1);
+						return TCL_ERROR;
 					}
 					old_result[j] = "\0";				
 				}
