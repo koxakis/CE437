@@ -1428,27 +1428,29 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 								}
 							// dected -> skip //
 							case SEPERATOR:
-								{	
+								{
+									// disregard seperator between nodes //
 									token = strtok(NULL, delim);
 									token = stripwhite(token);		
-									next_state = 3;
+									next_state = SECOND_NODE;
 									break;
 								}
 							// second n for node has been detected //
 							case SECOND_NODE:
 								{
+									// make sure it begins with an n otherwise get next token //
 									if ( token[0] != 'n')
 									{
+										// get the next token //
 										token = strtok(NULL, delim);
 										token = stripwhite(token);
 										next_state = SECOND_NODE;
 										break;
 									}
+									// reserve memory for upcoming node line according to line size //
 									nodes[i] = strcat( nodes[i], token);
 									nodes[i] = strcat( nodes[i], ",");
-									// make sure it begins with an n //
-									// use strlen to determin the size of the node //
-									// allocate enough memory for node //
+									// get the next token //
 									token = strtok(NULL, delim);
 									token = stripwhite(token);
 									next_state = VALUE;
@@ -1457,11 +1459,9 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 							// record the value of the node //
 							case VALUE:
 								{
+									// clean value from white characters //
 									token = stripwhite(token);
 									nodes[i] = strcat( nodes[i], token);
-									// make sure it is a number //
-									// use strlen to determin the size of the delay //
-									// allocate enough memory for delay //
 									token = strtok(NULL, delim);
 									next_state = ITERATOR;
 									break;
