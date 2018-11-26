@@ -5,12 +5,20 @@
 		},
 		{
 			"path": "/home/nikolas/Documents/cad"
+		},
+		{
+			"path": "/run/media/nikolas/Linux_Data/grive/Panepistimio/9_Semester/CAD_1/hw3/graphviz_demos"
 		}
 	],
 	"settings": {
 		"files.associations": {
 			"*.cu": "cpp",
-			"readline_functions.h": "c"
-		}
+			"*.spice": "spice",
+			"readline_functions.h": "c",
+			"stdlib.h": "c",
+			"string.h": "c"
+		},
+		"editor.fontSize": 12,
+		"editor.tabSize": 2
 	}
 }

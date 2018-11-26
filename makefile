@@ -1,8 +1,8 @@
 CC=gcc
 CFLAGS= -Wall -g -I. -ltcl8.6 -lreadline
-OBJ= main.o tcl/tcl_functions.o readline/readline_functions.o
+OBJ= main.o file_functions/parser.o tcl/tcl_functions.o readline/readline_functions.o 
 
-main: $(OBJ)
+tcl_shell: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 # readline function make 
@@ -10,12 +10,13 @@ readline/readline_functions.o: readline/readline_functions.c readline/readline_f
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # tcl function make 
+file_functions/parser.o: file_functions/parser.c file_functions/parser.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# tcl function make 
 tcl/tcl_functions.o: tcl/tcl_functions.c tcl/tcl_functions.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # clean
-clean_obj:
-	rm $(OBJ) 
-
-clean_all:
-	rm $(OBJ) main
+clean:
+	rm $(OBJ) tcl_shell

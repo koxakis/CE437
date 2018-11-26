@@ -4,10 +4,6 @@
 // 								Implemented TCL-8.6 functions 			   																														 
 /*************************************************************************************/
 
-#include <tcl.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "tcl_functions.h"
 
 // identify or return the name of the binary file containing the application //
@@ -34,6 +30,9 @@ int init_interpreter()
 	Tcl_CreateObjCommand(interpreter, "sharp", sharp, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "off_f", off_f, NULL, NULL);
 
+	Tcl_CreateObjCommand(interpreter, "read_graph", read_graph, NULL, NULL);	
+	Tcl_CreateObjCommand(interpreter, "vim", vim, NULL, NULL);	
+
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
@@ -50,7 +49,43 @@ int del_interpreter()
 	Tcl_DeleteInterp(interpreter);
 	return TCL_ERROR;
 }
+int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+	char command[] = "vim";
+	char *arguments = NULL;
+	char *com_command = NULL;
+	int file_length=0;
 
+	// protect from segmentation faults by checking the arguments //
+	if (argc != 2)
+	{
+		fprintf(stderr, RED"!!! (less) not enough arguments \n\x1B[0m less <file> \n"NRM);
+		return TCL_ERROR;
+	}
+	// get filename argument //
+	// get length of file name from tcl environment global //
+	// through Tcl_GetStringFromObj which returns a nonNull length from the given pinter //
+	arguments = Tcl_GetStringFromObj(argv[1], &file_length);
+	if (arguments == NULL)
+	{
+		fprintf(stderr, RED"!!!Error while aquaring arguments  \n"NRM);
+		return TCL_ERROR;
+	}
+	// allocate memory for system command //
+	com_command = (char *) malloc((file_length ) * sizeof(char));
+	if (com_command == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		return TCL_ERROR;
+	}
+
+	// combine command and args to send to System //
+	sprintf(com_command, "%s %s", command, arguments);
+	system(com_command);
+
+	free (com_command);
+	return TCL_OK;
+}
 // display the contents of a file //
 int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
@@ -663,10 +698,10 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 	int old_res_index;
 
 	if (argc != 3)
-	{
-		fprintf(stderr, RED"!!! (sharp) illegal arguments\n\x1B[0m sharp <cube 1> {cube 2, cube_3, ..., cube n}\n");
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!! (sharp) illegal arguments\n\x1B[0m sharp <cube 1> {cube 2, cube_3, ..., cube n}\n");
+			return TCL_ERROR;
+		}
 
 	cube_1 = Tcl_GetStringFromObj(argv[1], &cube_1_length);
 	list_f_in = Tcl_GetStringFromObj(argv[2], &list_f_in_length);
@@ -676,198 +711,68 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 
 	head = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
 	if (head == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
 	head->next= head;
 	head->prev= head;
 
 	// get the next token //
 	while (token != NULL)
-	{
-		// remove any whitespace character from cube //
-		token = stripwhite(token);
-		// check if even and length requirements are met //
-		if( do_cube_check(cube_1_length, (int)strlen(token)) == TCL_ERROR)
 		{
-			return TCL_ERROR;
-		}
+			// remove any whitespace character from cube //
+			token = stripwhite(token);
+			// check if even and length requirements are met //
+			if( do_cube_check(cube_1_length, (int)strlen(token)) == TCL_ERROR)
+				{
+					return TCL_ERROR;
+				}
 
-		curr = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
-		if (curr == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}	
-		curr->next = head->next;
-		curr->prev = head;
+			curr = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
+			if (curr == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}	
+			curr->next = head->next;
+			curr->prev = head;
 
-		head->next = curr;
-		head->prev = curr;
+			head->next = curr;
+			head->prev = curr;
 
-		curr->inter_cube_res = (char**) calloc(cube_1_length/2,sizeof(char*));
-		if (curr->inter_cube_res == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
+			curr->inter_cube_res = (char**) calloc(cube_1_length/2,sizeof(char*));
+			if (curr->inter_cube_res == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
 
-		for (i=0; i<cube_1_length/2; i++)
-		{
-			curr->inter_cube_res[i] =(char*) calloc(cube_1_length+1,sizeof(char));
-			if (curr->inter_cube_res[i] == NULL)
+			for (i=0; i<cube_1_length/2; i++)
 			{
-				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				return TCL_ERROR;
+				curr->inter_cube_res[i] =(char*) calloc(cube_1_length+1,sizeof(char));
+				if (curr->inter_cube_res[i] == NULL)
+					{
+						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+						return TCL_ERROR;
+					}
 			}
-		}
-		do_sharp_2(curr->inter_cube_res, cube_1, token, cube_1_length, (int)strlen(token));
+			do_sharp_2(curr->inter_cube_res, cube_1, token, cube_1_length, (int)strlen(token));
 
-		// find next cube in list //
-		token = strtok(NULL, delim);
-	}
+			// find next cube in list //
+			token = strtok(NULL, delim);
+		}
 
 	// allocate memory size as the size of the result of the oporation between the first 2 #s//
 	temp_memory_size = (cube_1_length/2) * (cube_1_length/2);
 
 	temp_result = (char **) calloc(temp_memory_size,sizeof(char*));
 	if (temp_result == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
 	for (i=0; i<temp_memory_size; i++)
-	{
-		temp_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
-		if (temp_result[i] == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-	}
-
-	// allocate memory size for the first result //
-	old_result = (char **) calloc(cube_1_length/2,sizeof(char*));
-	if (old_result == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
-	for (i=0; i<cube_1_length/2; i++)
-	{
-		old_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
-		if (old_result[i] == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-	}
-
-	// initialize the old result with a # f1 in order to start the procedure from the first result //
-	// as the results of # operation are inserted in the list in reverse order //
-	for (i=0; i<cube_1_length/2; i++)
-	{
-		if( strcmp(head->prev->inter_cube_res[i],"\0")!=0 )
-		{
-			old_result[i] = strcpy(old_result[i], head->prev->inter_cube_res[i]);
-		}
-	}
-	// initialize the temp_result index in order to be preserved during the for loops for each node of the list // 
-	temp_res_index = 0;
-	// initialize the old result iterator limit with the number of the first # //
-	old_res_index = cube_1_length/2;
-	// continue from the next f2 cube again in reverse order and stop until you reach the head //
-	for(curr=head->prev->prev; curr!=head; curr= curr->prev)
-	{
-		// iterate through the cubes of the old result //
-		// the first iteration will go from 0 to cube_1_length //
-		for( i=0; i<old_res_index; i++)
-		{
-			// iterate every a # fn cube result //
-			for( j=0; j<cube_1_length/2; j++ )
-			{
-				// if the cube in question is not empty ( is valid ) and the old result has a valid value //
-				// if there is then perform the intersection normally //
-				if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
-				{
-					do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], cube_1_length, cube_1_length);
-				}
-				// if old result has no valid entry skip //
-				else if (strcmp(old_result[i], "\0") == 0)
-				{
-					break;
-				}
-				// if cube # result is \0 transfer the result from the old result to temp result  //
-				else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
-				{
-					// if the empty record in curr is at the end of the list then transfer cube //
-					// from the old result to the temp result and advance index //
-					if (j == (cube_1_length/2)-1 )
-					{
-						temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
-						temp_res_index++;
-						continue;
-					}
-					// if not then the next record in curr must be explored //
-					else
-					{
-						continue;
-					}
-				} 
-				// if the resulting cube has 00s in then its is invalid and the memory is released // 
-				if ( count_zeros(temp_result[temp_res_index], cube_1_length) != 0 )
-				{
-					// release memory for invalid entry //
-					temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
-					if (temp_result[temp_res_index] == NULL)
-					{
-						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						return TCL_ERROR;
-					}
-					temp_result[temp_res_index] = "\0";
-					continue;
-				}
-				// increment temp result location in order to keep track between cubes //
-				temp_res_index++;
-			}
-		}
-		
-		old_result = (char**)realloc(old_result, sizeof(char*)*temp_memory_size );
-		if (old_result == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-		for (i=0; i<temp_memory_size; i++)
-		{
-			old_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
-			if (old_result[i] == NULL)
-			{
-				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				return TCL_ERROR;
-			}
-		}
-		for (i=0; i<temp_memory_size; i++)
-		{
-			if( strcmp(temp_result[i],"\0")!=0 )
-			{
-				old_result[i] = strcpy(old_result[i], temp_result[i]);
-			}
-		}
-		// update the iterator limit with the value of data in the temp result //
-		old_res_index = temp_memory_size;
-		// update memory size to accommodate new & result //
-		temp_memory_size = temp_memory_size * (cube_1_length/2);
-		//old_result = temp_result;
-		
-		temp_result = (char**)realloc(temp_result, sizeof(char*)*temp_memory_size );
-		if (temp_result == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-		for (i=0; i<temp_memory_size; i++)
 		{
 			temp_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
 			if (temp_result[i] == NULL)
@@ -876,87 +781,217 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 				return TCL_ERROR;
 			}
 		}
-		// reset temp_res_index for next node //
-		temp_res_index = 0;
-		
-	}
+
+	// allocate memory size for the first result //
+	old_result = (char **) calloc(cube_1_length/2,sizeof(char*));
+	if (old_result == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
+	for (i=0; i<cube_1_length/2; i++)
+		{
+			old_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
+			if (old_result[i] == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+		}
+
+	// initialize the old result with a # f1 in order to start the procedure from the first result //
+	// as the results of # operation are inserted in the list in reverse order //
+	for (i=0; i<cube_1_length/2; i++)
+		{
+			if( strcmp(head->prev->inter_cube_res[i],"\0")!=0 )
+			{
+				old_result[i] = strcpy(old_result[i], head->prev->inter_cube_res[i]);
+			}
+		}
+	// initialize the temp_result index in order to be preserved during the for loops for each node of the list // 
+	temp_res_index = 0;
+	// initialize the old result iterator limit with the number of the first # //
+	old_res_index = cube_1_length/2;
+	// continue from the next f2 cube again in reverse order and stop until you reach the head //
+	for(curr=head->prev->prev; curr!=head; curr= curr->prev)
+		{
+			// iterate through the cubes of the old result //
+			// the first iteration will go from 0 to cube_1_length //
+			for( i=0; i<old_res_index; i++)
+			{
+				// iterate every a # fn cube result //
+				for( j=0; j<cube_1_length/2; j++ )
+				{
+					// if the cube in question is not empty ( is valid ) and the old result has a valid value //
+					// if there is then perform the intersection normally //
+					if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
+					{
+						do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], cube_1_length, cube_1_length);
+					}
+					// if old result has no valid entry skip //
+					else if (strcmp(old_result[i], "\0") == 0)
+					{
+						break;
+					}
+					// if cube # result is \0 transfer the result from the old result to temp result  //
+					else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
+					{
+						// if the empty record in curr is at the end of the list then transfer cube //
+						// from the old result to the temp result and advance index //
+						if (j == (cube_1_length/2)-1 )
+						{
+							temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
+							temp_res_index++;
+							continue;
+						}
+						// if not then the next record in curr must be explored //
+						else
+						{
+							continue;
+						}
+					} 
+					// if the resulting cube has 00s in then its is invalid and the memory is released // 
+					if ( count_zeros(temp_result[temp_res_index], cube_1_length) != 0 )
+					{
+						// release memory for invalid entry //
+						temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
+						if (temp_result[temp_res_index] == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}
+						temp_result[temp_res_index] = "\0";
+						continue;
+					}
+					// increment temp result location in order to keep track between cubes //
+					temp_res_index++;
+				}
+			}
+			
+			old_result = (char**)realloc(old_result, sizeof(char*)*temp_memory_size );
+			if (old_result == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				old_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
+				if (old_result[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				if( strcmp(temp_result[i],"\0")!=0 )
+				{
+					old_result[i] = strcpy(old_result[i], temp_result[i]);
+				}
+			}
+			// update the iterator limit with the value of data in the temp result //
+			old_res_index = temp_memory_size;
+			// update memory size to accommodate new & result //
+			temp_memory_size = temp_memory_size * (cube_1_length/2);
+			//old_result = temp_result;
+			
+			temp_result = (char**)realloc(temp_result, sizeof(char*)*temp_memory_size );
+			if (temp_result == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				temp_result[i] = (char *) calloc(cube_1_length+1,sizeof(char));
+				if (temp_result[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+			}
+			// reset temp_res_index for next node //
+			temp_res_index = 0;
+			
+		}
 	// check for duplicates //
 	for(i=0; i<old_res_index; i++)
-	{ 
-		for(j=0; j < old_res_index; j++)
-		{
-			// skip if j is the same as i then this is the string it self //
-			if (j==i)
+		{ 
+			for(j=0; j < old_res_index; j++)
 			{
-				continue;
-			}
-			else
-			{
-				// if the strings are the same and the string is not NULL then reallocate the memory and erase the entry //
-				if( (strcmp(old_result[i], old_result[j]) == 0) && (strcmp(old_result[j],"\0")!=0) )
+				// skip if j is the same as i then this is the string it self //
+				if (j==i)
 				{
-					old_result[j] = (char*)realloc(old_result[i], sizeof(char) );
-					if (old_result[j] == NULL)
+					continue;
+				}
+				else
+				{
+					// if the strings are the same and the string is not NULL then reallocate the memory and erase the entry //
+					if( (strcmp(old_result[i], old_result[j]) == 0) && (strcmp(old_result[j],"\0")!=0) )
 					{
-						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						return TCL_ERROR;
+						old_result[j] = (char*)realloc(old_result[i], sizeof(char) );
+						if (old_result[j] == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}
+						old_result[j] = "\0";				
 					}
-					old_result[j] = "\0";				
 				}
 			}
 		}
-	}
 	for(curr=head->next; curr!=head; curr= curr->next)
-	{
-		printf("Result set :\n");
-		for(i=0; i<cube_1_length/2; i++)
 		{
-			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			printf("Result set :\n");
+			for(i=0; i<cube_1_length/2; i++)
 			{
-				printf("%s \n", curr->inter_cube_res[i]);
+				if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+				{
+					printf("%s \n", curr->inter_cube_res[i]);
+				}
 			}
 		}
-	}
 
 	printf("\nFinal Cubes:\n");
 	for(i=0; i<old_res_index; i++)
-	{
-		if( strcmp(old_result[i],"\0")!=0 )
 		{
-			printf("%s \n", old_result[i]);
-		}
-	}
-	curr= head->next;
-	while (curr != head)
-	{
-		for(i=0; i<cube_1_length/2; i++)
-		{
-			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			if( strcmp(old_result[i],"\0")!=0 )
 			{
-				free(curr->inter_cube_res[i]);
+				printf("%s \n", old_result[i]);
 			}
 		}
-		curr_temp = curr;
-		curr = curr->next;
-		free(curr_temp);
-	}
+	curr= head->next;
+	while (curr != head)
+		{
+			for(i=0; i<cube_1_length/2; i++)
+			{
+				if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+				{
+					free(curr->inter_cube_res[i]);
+				}
+			}
+			curr_temp = curr;
+			curr = curr->next;
+			free(curr_temp);
+		}
 	free(head);
 	for(i=0; i < temp_memory_size; i++)
-	{
-		if( strcmp(temp_result[i],"\0")!=0 )
 		{
-			free(temp_result[i]);
-		}		
-	}
+			if( strcmp(temp_result[i],"\0")!=0 )
+			{
+				free(temp_result[i]);
+			}		
+		}
 	free(temp_result);
 
 	for(i=0; i < old_res_index; i++)
-	{
-		if( strcmp(old_result[i],"\0")!=0 )
 		{
-			free(old_result[i]);
-		}		
-	}
+			if( strcmp(old_result[i],"\0")!=0 )
+			{
+				free(old_result[i]);
+			}		
+		}
 	free(old_result);	
 
 	return TCL_OK;
@@ -983,10 +1018,10 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 	int old_res_index;
 
 	if (argc != 2)
-	{
-		fprintf(stderr, RED"!!! (off_f) illegal arguments\n\x1B[0m off_f {cube 1, cube_2, ..., cube n}\n");
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!! (off_f) illegal arguments\n\x1B[0m off_f {cube 1, cube_2, ..., cube n}\n");
+			return TCL_ERROR;
+		}
 
 	list_f_in = Tcl_GetStringFromObj(argv[1], &list_f_in_length);
 
@@ -999,213 +1034,84 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 	token = stripwhite(token);
 	universe_length = strlen(token);
 	if ( universe_length%2 != 0 )
-	{
-		fprintf(stderr, RED"!!!(off_f) not even length cube\n\x1B[0m off_f {cube 1, cube_2, ..., cube n}\n");
-		return TCL_ERROR;		
-	}
+		{
+			fprintf(stderr, RED"!!!(off_f) not even length cube\n\x1B[0m off_f {cube 1, cube_2, ..., cube n}\n");
+			return TCL_ERROR;		
+		}
 	
 	cube_universe = calloc(universe_length+1,sizeof(char));
 	if (cube_universe == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;		
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;		
+		}
 	for (i=0; i<universe_length; i++)
-	{
-		strcat(cube_universe, "1");
-	}
+		{
+			strcat(cube_universe, "1");
+		}
 
 	head = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
 	if (head == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
 	head->next=head;
 	head->prev=head;
 	
 	while (token != NULL)
-	{
-		// remove any whitespace character from cube //
-		token = stripwhite(token);
-		// check if even and length requirements are met //
-		if( do_cube_check(universe_length, (int)strlen(token)) == TCL_ERROR)
 		{
-			return TCL_ERROR;
-		}
+			// remove any whitespace character from cube //
+			token = stripwhite(token);
+			// check if even and length requirements are met //
+			if( do_cube_check(universe_length, (int)strlen(token)) == TCL_ERROR)
+			{
+				return TCL_ERROR;
+			}
 
-		curr = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
-		if (curr == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}	
-		curr->next = head->next;
-		curr->prev = head;
+			curr = (inter_cube_list_T*)malloc(sizeof(inter_cube_list_T));
+			if (curr == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}	
+			curr->next = head->next;
+			curr->prev = head;
 
-		head->next = curr;
-		head->prev = curr;
+			head->next = curr;
+			head->prev = curr;
 
-		curr->inter_cube_res = (char**) calloc(universe_length/2,sizeof(char*));
-		if (curr->inter_cube_res == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-
-		for (i=0; i<universe_length/2; i++)
-		{
-			curr->inter_cube_res[i] =(char*) calloc(universe_length+1,sizeof(char));
-			if (curr->inter_cube_res[i] == NULL)
+			curr->inter_cube_res = (char**) calloc(universe_length/2,sizeof(char*));
+			if (curr->inter_cube_res == NULL)
 			{
 				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 				return TCL_ERROR;
 			}
-		}
-		do_sharp_2(curr->inter_cube_res, cube_universe, token, universe_length, (int)strlen(token));
 
-		// find next cube in list //
-		token = strtok(NULL, delim);
-	}
+			for (i=0; i<universe_length/2; i++)
+			{
+				curr->inter_cube_res[i] =(char*) calloc(universe_length+1,sizeof(char));
+				if (curr->inter_cube_res[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+			}
+			do_sharp_2(curr->inter_cube_res, cube_universe, token, universe_length, (int)strlen(token));
+
+			// find next cube in list //
+			token = strtok(NULL, delim);
+		}
 	// allocate memory size as the size of the result of the oporation between the first 2 #s//
 	temp_memory_size = (universe_length/2) * (universe_length/2);
 
 	temp_result = (char **) calloc(temp_memory_size,sizeof(char*));
 	if (temp_result == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
 	for (i=0; i<temp_memory_size; i++)
-	{
-		temp_result[i] = (char *) calloc(universe_length+1,sizeof(char));
-		if (temp_result[i] == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-	}
-
-	// allocate memory size for the first result //
-	old_result = (char **) calloc(universe_length/2,sizeof(char*));
-	if (old_result == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
-	for (i=0; i<universe_length/2; i++)
-	{
-		old_result[i] = (char *) calloc(universe_length+1,sizeof(char));
-		if (old_result[i] == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-	}
-
-	// initialize the old result with a # f1 in order to start the procedure from the first result //
-	// as the results of # operation are inserted in the list in reverse order //
-	for (i=0; i<universe_length/2; i++)
-	{
-		if( strcmp(head->prev->inter_cube_res[i],"\0")!=0 )
-		{
-			old_result[i] = strcpy(old_result[i], head->prev->inter_cube_res[i]);
-		}
-	}
-	// initialize the temp_result index in order to be preserved during the for loops for each node of the list // 
-	temp_res_index = 0;
-	// initialize the old result iterator limit with the number of the first # //
-	old_res_index = universe_length/2;
-	// continue from the next f2 cube again in reverse order and stop until you reach the head //
-	for(curr=head->prev->prev; curr!=head; curr= curr->prev)
-	{
-		// iterate through the cubes of the old result //
-		// the first iteration will go from 0 to universe_length //
-		for( i=0; i<old_res_index; i++)
-		{
-			// iterate every a # fn cube result //
-			for( j=0; j<universe_length/2; j++ )
-			{
-				// if the cube in question is not empty ( is valid ) and the old result has a valid value //
-				// if there is then perform the intersection normally //
-				if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
-				{
-					do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], universe_length, universe_length);
-				}
-				// if old result has no valid entry skip //
-				else if (strcmp(old_result[i], "\0") == 0)
-				{
-					break;
-				}
-				// if cube # result is \0 transfer the result from the old result to temp result  //
-				else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
-				{
-					// if the empty record in curr is at the end of the list then transfer cube //
-					// from the old result to the temp result and advance index //
-					if (j == (universe_length/2)-1 )
-					{
-						temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
-						temp_res_index++;
-						continue;
-					}
-					// if not then the next record in curr must be explored //
-					else
-					{
-						continue;
-					}
-				} 
-				// if the resulting cube has 00s in then its is invalid and the memory is released // 
-				if ( count_zeros(temp_result[temp_res_index], universe_length) != 0 )
-				{
-					// release memory for invalid entry //
-					temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
-					if (temp_result[temp_res_index] == NULL)
-					{
-						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						return TCL_ERROR;
-					}
-					temp_result[temp_res_index] = "\0";
-					continue;
-				}
-				// increment temp result location in order to keep track between cubes //
-				temp_res_index++;
-			}
-		}
-		
-		old_result = (char**)realloc(old_result, sizeof(char*)*temp_memory_size );
-		if (old_result == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-		for (i=0; i<temp_memory_size; i++)
-		{
-			old_result[i] = (char *) calloc(universe_length+1,sizeof(char));
-			if (old_result[i] == NULL)
-			{
-				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				return TCL_ERROR;
-			}
-		}
-		for (i=0; i<temp_memory_size; i++)
-		{
-			if( strcmp(temp_result[i],"\0")!=0 )
-			{
-				old_result[i] = strcpy(old_result[i], temp_result[i]);
-			}
-		}
-		// update the iterator limit with the value of data in the temp result //
-		old_res_index = temp_memory_size;
-		// update memory size to accommodate new & result //
-		temp_memory_size = temp_memory_size * (universe_length/2);
-		
-		temp_result = (char**)realloc(temp_result, sizeof(char*)*temp_memory_size );
-		if (temp_result == NULL)
-		{
-			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-			return TCL_ERROR;
-		}
-		for (i=0; i<temp_memory_size; i++)
 		{
 			temp_result[i] = (char *) calloc(universe_length+1,sizeof(char));
 			if (temp_result[i] == NULL)
@@ -1214,89 +1120,383 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 				return TCL_ERROR;
 			}
 		}
-		// reset temp_res_index for next node //
-		temp_res_index = 0;
-		
-	}
+
+	// allocate memory size for the first result //
+	old_result = (char **) calloc(universe_length/2,sizeof(char*));
+	if (old_result == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
+	for (i=0; i<universe_length/2; i++)
+		{
+			old_result[i] = (char *) calloc(universe_length+1,sizeof(char));
+			if (old_result[i] == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+		}
+
+	// initialize the old result with a # f1 in order to start the procedure from the first result //
+	// as the results of # operation are inserted in the list in reverse order //
+	for (i=0; i<universe_length/2; i++)
+		{
+			if( strcmp(head->prev->inter_cube_res[i],"\0")!=0 )
+			{
+				old_result[i] = strcpy(old_result[i], head->prev->inter_cube_res[i]);
+			}
+		}
+	// initialize the temp_result index in order to be preserved during the for loops for each node of the list // 
+	temp_res_index = 0;
+	// initialize the old result iterator limit with the number of the first # //
+	old_res_index = universe_length/2;
+	// continue from the next f2 cube again in reverse order and stop until you reach the head //
+	for(curr=head->prev->prev; curr!=head; curr= curr->prev)
+		{
+			// iterate through the cubes of the old result //
+			// the first iteration will go from 0 to universe_length //
+			for( i=0; i<old_res_index; i++)
+			{
+				// iterate every a # fn cube result //
+				for( j=0; j<universe_length/2; j++ )
+				{
+					// if the cube in question is not empty ( is valid ) and the old result has a valid value //
+					// if there is then perform the intersection normally //
+					if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
+					{
+						do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], universe_length, universe_length);
+					}
+					// if old result has no valid entry skip //
+					else if (strcmp(old_result[i], "\0") == 0)
+					{
+						break;
+					}
+					// if cube # result is \0 transfer the result from the old result to temp result  //
+					else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
+					{
+						// if the empty record in curr is at the end of the list then transfer cube //
+						// from the old result to the temp result and advance index //
+						if (j == (universe_length/2)-1 )
+						{
+							temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
+							temp_res_index++;
+							continue;
+						}
+						// if not then the next record in curr must be explored //
+						else
+						{
+							continue;
+						}
+					} 
+					// if the resulting cube has 00s in then its is invalid and the memory is released // 
+					if ( count_zeros(temp_result[temp_res_index], universe_length) != 0 )
+					{
+						// release memory for invalid entry //
+						temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
+						if (temp_result[temp_res_index] == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}
+						temp_result[temp_res_index] = "\0";
+						continue;
+					}
+					// increment temp result location in order to keep track between cubes //
+					temp_res_index++;
+				}
+			}
+			
+			old_result = (char**)realloc(old_result, sizeof(char*)*temp_memory_size );
+			if (old_result == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				old_result[i] = (char *) calloc(universe_length+1,sizeof(char));
+				if (old_result[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				if( strcmp(temp_result[i],"\0")!=0 )
+				{
+					old_result[i] = strcpy(old_result[i], temp_result[i]);
+				}
+			}
+			// update the iterator limit with the value of data in the temp result //
+			old_res_index = temp_memory_size;
+			// update memory size to accommodate new & result //
+			temp_memory_size = temp_memory_size * (universe_length/2);
+			
+			temp_result = (char**)realloc(temp_result, sizeof(char*)*temp_memory_size );
+			if (temp_result == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+			for (i=0; i<temp_memory_size; i++)
+			{
+				temp_result[i] = (char *) calloc(universe_length+1,sizeof(char));
+				if (temp_result[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+			}
+			// reset temp_res_index for next node //
+			temp_res_index = 0;
+			
+		}
 	// check for duplicates //
 	for(i=0; i<old_res_index; i++)
-	{ 
-		for(j=0; j < old_res_index; j++)
-		{
-			// skip if j is the same as i then this is the string it self //
-			if (j==i)
+		{ 
+			for(j=0; j < old_res_index; j++)
 			{
-				continue;
-			}
-			else
-			{
-				// if the strings are the same and the string is not NULL then reallocate the memory and erase the entry //
-				if( (strcmp(old_result[i], old_result[j]) == 0) && (strcmp(old_result[j],"\0")!=0) )
+				// skip if j is the same as i then this is the string it self //
+				if (j==i)
 				{
-					old_result[j] = (char*)realloc(old_result[i], sizeof(char) );
-					if (old_result[j] == NULL)
+					continue;
+				}
+				else
+				{
+					// if the strings are the same and the string is not NULL then reallocate the memory and erase the entry //
+					if( (strcmp(old_result[i], old_result[j]) == 0) && (strcmp(old_result[j],"\0")!=0) )
 					{
-						fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-						return TCL_ERROR;
+						old_result[j] = (char*)realloc(old_result[i], sizeof(char) );
+						if (old_result[j] == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}
+						old_result[j] = "\0";				
 					}
-					old_result[j] = "\0";				
 				}
 			}
 		}
-	}
 	for(curr=head->next; curr!=head; curr= curr->next)
-	{
-		printf("Result set :\n");
-		for(i=0; i<universe_length/2; i++)
 		{
-			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			printf("Result set :\n");
+			for(i=0; i<universe_length/2; i++)
 			{
-				printf("%s \n", curr->inter_cube_res[i]);
+				if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+				{
+					printf("%s \n", curr->inter_cube_res[i]);
+				}
 			}
 		}
-	}
 
 	printf("\nFinal Cubes:\n");
 	for(i=0; i<old_res_index; i++)
-	{
-		if( strcmp(old_result[i],"\0")!=0 )
 		{
-			printf("%s \n", old_result[i]);
-		}
-	}
-	curr= head->next;
-	while (curr != head)
-	{
-		for(i=0; i<universe_length/2; i++)
-		{
-			if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+			if( strcmp(old_result[i],"\0")!=0 )
 			{
-				free(curr->inter_cube_res[i]);
+				printf("%s \n", old_result[i]);
 			}
 		}
-		curr_temp = curr;
-		curr = curr->next;
-		free(curr_temp);
-	}
+	curr= head->next;
+	while (curr != head)
+		{	
+			for(i=0; i<universe_length/2; i++)
+			{
+				if( strcmp(curr->inter_cube_res[i],"\0")!=0 )
+				{
+					free(curr->inter_cube_res[i]);
+				}
+			}
+			curr_temp = curr;
+			curr = curr->next;
+			free(curr_temp);
+		}
 	free(head);
 	for(i=0; i < temp_memory_size; i++)
-	{
-		if( strcmp(temp_result[i],"\0")!=0 )
 		{
-			free(temp_result[i]);
-		}		
-	}
+			if( strcmp(temp_result[i],"\0")!=0 )
+			{
+				free(temp_result[i]);
+			}		
+		}
 	free(temp_result);
 
 	for(i=0; i < old_res_index; i++)
-	{
-		if( strcmp(old_result[i],"\0")!=0 )
 		{
-			free(old_result[i]);
-		}		
-	}
+			if( strcmp(old_result[i],"\0")!=0 )
+				{
+					free(old_result[i]);
+				}		
+		}
 	free(old_result);	
 
 	return TCL_OK;
 }
+int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
 
+	FILE *fp;
+
+	char *line=NULL;
+	char *file_name=NULL;
+	char *token=NULL;
+	char **nodes=NULL;
+	char delim[2]=" ";
+
+	int file_name_length;
+	int state;
+	int next_state=1;
+
+	unsigned long line_len=0;
+	unsigned long read_line;
+	unsigned long num_of_conns=0;
+	unsigned long i=0;
+
+	if (argc != 2)
+		{
+			fprintf(stderr, RED"!!! (read_graph) illegal arguments\n\x1B[0m read_graph <file_name>\n");
+			return TCL_ERROR;
+		}
+
+	// get file name from command //
+	file_name = Tcl_GetStringFromObj(argv[1], &file_name_length);
+
+	// open a file descriptor based on a file name //
+	fp = fopen(file_name,"r");
+	if ( fp == NULL )
+		{
+			fprintf(stderr, RED"!!!Error in file opening \n"NRM);
+			return TCL_ERROR;		
+		}
+
+	// allocate memory for node table containing //
+	nodes = (char**) malloc(sizeof(char*));
+	if (nodes == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+		return TCL_ERROR;
+	}
+
+	while ( ( read_line = getline(&line, &line_len, fp) ) != -1 )
+		{
+			token = strtok(line, delim);
+			token = stripwhite(token);			
+			while ( token != NULL )
+				{
+					state = next_state;
+					switch (state)
+						{
+							// first n for node has been detected //
+							case FIRST_NODE:
+								{
+									// make sure it begins with an n otherwise get next token //
+									if ( token[0] != 'n')
+									{
+										// get the next token //
+										token = strtok(NULL, delim);
+										token = stripwhite(token);
+										next_state = FIRST_NODE;
+										break;
+									}
+									else
+									{
+										// reserve memory for upcoming node line according to line size //
+										nodes = (char **) realloc(nodes, sizeof(char*)* (i+1) );
+										if (nodes == NULL)
+										{
+											fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+											return TCL_ERROR;
+										}
+										nodes[i] = (char *) calloc(read_line+1,sizeof(char));
+										if (nodes[i] == NULL)
+										{
+											fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+											return TCL_ERROR;
+										}
+										// appent node in string with a delimeter in order to make it easer to parse afterworts //
+										nodes[i] = strcat( nodes[i], token);
+										nodes[i] = strcat( nodes[i], ",");
+										
+										// get the next token //
+										token = strtok(NULL, delim);
+										token = stripwhite(token);
+										next_state = SEPERATOR;		
+										break;								
+									}
+								}
+							// dected -> skip //
+							case SEPERATOR:
+								{	
+									token = strtok(NULL, delim);
+									token = stripwhite(token);		
+									next_state = 3;
+									break;
+								}
+							// second n for node has been detected //
+							case SECOND_NODE:
+								{
+									if ( token[0] != 'n')
+									{
+										token = strtok(NULL, delim);
+										token = stripwhite(token);
+										next_state = SECOND_NODE;
+										break;
+									}
+									nodes[i] = strcat( nodes[i], token);
+									nodes[i] = strcat( nodes[i], ",");
+									// make sure it begins with an n //
+									// use strlen to determin the size of the node //
+									// allocate enough memory for node //
+									token = strtok(NULL, delim);
+									token = stripwhite(token);
+									next_state = VALUE;
+									break;
+								}
+							// record the value of the node //
+							case VALUE:
+								{
+									token = stripwhite(token);
+									nodes[i] = strcat( nodes[i], token);
+									// make sure it is a number //
+									// use strlen to determin the size of the delay //
+									// allocate enough memory for delay //
+									token = strtok(NULL, delim);
+									next_state = ITERATOR;
+									break;
+								} 
+							case ITERATOR:
+								{
+									i++;
+									num_of_conns++;
+									next_state = FIRST_NODE;
+									break;
+								}
+						}
+				}
+		} 
+	for(i=0; i <= num_of_conns; i++)
+		{
+			if( strcmp(nodes[i],"\0")!=0 )
+				{
+					printf(" %s \n", nodes[i]);
+				}		
+		}
+
+	fclose(fp);
+	if (line != NULL)
+		{
+			free(line);
+		}
+
+	for(i=0; i < num_of_conns; i++)
+		{
+			if( strcmp(nodes[i],"\0")!=0 )
+				{
+					free(nodes[i]);
+				}		
+		}
+	free(nodes);	
+	return TCL_OK;
+}

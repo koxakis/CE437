@@ -4,7 +4,12 @@
 //		 							TCL function prototypes 				   																														 
 /*************************************************************************************/
 #include <tcl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "../readline/readline_functions.h"
+#include "../file_functions/parser.h"
 
 #define NRM  "\x1B[0m"		// Normal Color
 #define RED  "\x1B[31m"		// Red Color
@@ -14,6 +19,13 @@
 #define MAG  "\x1B[35m"		// Magenta Color
 #define CYN  "\x1B[36m"		// Cyan Color
 #define WHT "\x1B[37m"	// White Color
+
+// define parser fsm states //
+#define FIRST_NODE 1
+#define SEPERATOR 2
+#define SECOND_NODE 3
+#define VALUE 4
+#define ITERATOR 5
 
 Tcl_Interp *interpreter;
 
@@ -56,8 +68,12 @@ int sharp(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 
 int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
+int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
 // helper TCL functions //
-int do_sharp_2(char **,char* , char *, int , int);
+int do_sharp_2(char **, char*, char *, int, int);
 int count_zeros(char *, int);
 int do_cube_cover(char *, char *, int);
 void do_supercube(char *, char *, char *, int, int);
