@@ -32,6 +32,7 @@ int init_interpreter()
 
 	Tcl_CreateObjCommand(interpreter, "read_graph", read_graph, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "vim", vim, NULL, NULL);	
+	Tcl_CreateObjCommand(interpreter, "draw_graph", draw_graph, NULL, NULL);
 
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
@@ -1374,13 +1375,15 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	// allocate memory for node table containing //
 	nodes = (char**) malloc(sizeof(char*));
 	if (nodes == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+			return TCL_ERROR;
+		}
 
+	// read lines until you read NULL // 
 	while ( ( read_line = getline(&line, &line_len, fp) ) != -1 )
 		{
+			// retrive the first token from string // 
 			token = strtok(line, delim);
 			token = stripwhite(token);			
 			while ( token != NULL )
@@ -1426,7 +1429,7 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 										break;								
 									}
 								}
-							// dected -> skip //
+							// skip seperator of nodes //
 							case SEPERATOR:
 								{
 									// disregard seperator between nodes //
@@ -1447,7 +1450,7 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 										next_state = SECOND_NODE;
 										break;
 									}
-									// reserve memory for upcoming node line according to line size //
+									// appent node in string with a delimeter in order to make it easer to parse afterworts //
 									nodes[i] = strcat( nodes[i], token);
 									nodes[i] = strcat( nodes[i], ",");
 									// get the next token //
@@ -1499,4 +1502,10 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 		}
 	free(nodes);	
 	return TCL_OK;
+}
+
+
+int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+
 }

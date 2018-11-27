@@ -18,7 +18,7 @@
 #define BLU  "\x1B[34m"		// Blue Color
 #define MAG  "\x1B[35m"		// Magenta Color
 #define CYN  "\x1B[36m"		// Cyan Color
-#define WHT "\x1B[37m"	// White Color
+#define WHT  "\x1B[37m"	// White Color
 
 // define parser fsm states //
 #define FIRST_NODE 1
@@ -28,6 +28,20 @@
 #define ITERATOR 5
 
 Tcl_Interp *interpreter;
+
+typedef struct nodes
+{
+	char **node_name;
+	
+	int *node_index;
+
+	int **predasesor;
+
+	int **successor;
+
+	int **value;
+
+}nodesT;
 
 typedef struct inter_cube_list { 
 
@@ -71,6 +85,8 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 // helper TCL functions //
 int do_sharp_2(char **, char*, char *, int, int);
