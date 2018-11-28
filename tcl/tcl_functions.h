@@ -31,15 +31,15 @@ Tcl_Interp *interpreter;
 
 typedef struct nodes
 {
-	char **node_name;
+	char *node_name;
 	
-	int *node_index;
+	int node_index;
 
-	int **predasesor;
+	int *predasesor;
 
-	int **successor;
+	int *successor;
 
-	int **value;
+	int *value;
 
 }nodesT;
 

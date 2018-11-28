@@ -1133,10 +1133,10 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 		{
 			old_result[i] = (char *) calloc(universe_length+1,sizeof(char));
 			if (old_result[i] == NULL)
-			{
-				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				return TCL_ERROR;
-			}
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
 		}
 
 	// initialize the old result with a # f1 in order to start the procedure from the first result //
@@ -1158,55 +1158,55 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 			// iterate through the cubes of the old result //
 			// the first iteration will go from 0 to universe_length //
 			for( i=0; i<old_res_index; i++)
-			{
-				// iterate every a # fn cube result //
-				for( j=0; j<universe_length/2; j++ )
 				{
-					// if the cube in question is not empty ( is valid ) and the old result has a valid value //
-					// if there is then perform the intersection normally //
-					if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
-					{
-						do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], universe_length, universe_length);
-					}
-					// if old result has no valid entry skip //
-					else if (strcmp(old_result[i], "\0") == 0)
-					{
-						break;
-					}
-					// if cube # result is \0 transfer the result from the old result to temp result  //
-					else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
-					{
-						// if the empty record in curr is at the end of the list then transfer cube //
-						// from the old result to the temp result and advance index //
-						if (j == (universe_length/2)-1 )
+					// iterate every a # fn cube result //
+					for( j=0; j<universe_length/2; j++ )
 						{
-							temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
-							temp_res_index++;
-							continue;
-						}
-						// if not then the next record in curr must be explored //
-						else
-						{
-							continue;
-						}
-					} 
-					// if the resulting cube has 00s in then its is invalid and the memory is released // 
-					if ( count_zeros(temp_result[temp_res_index], universe_length) != 0 )
-					{
-						// release memory for invalid entry //
-						temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
-						if (temp_result[temp_res_index] == NULL)
-						{
-							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-							return TCL_ERROR;
-						}
-						temp_result[temp_res_index] = "\0";
-						continue;
-					}
-					// increment temp result location in order to keep track between cubes //
-					temp_res_index++;
+							// if the cube in question is not empty ( is valid ) and the old result has a valid value //
+							// if there is then perform the intersection normally //
+							if ( (strcmp(curr->inter_cube_res[j], "\0") != 0) && (strcmp(old_result[i], "\0") != 0) )
+								{
+									do_cube_intersect(temp_result[temp_res_index], old_result[i], curr->inter_cube_res[j], universe_length, universe_length);
+								}
+							// if old result has no valid entry skip //
+							else if (strcmp(old_result[i], "\0") == 0)
+								{
+									break;
+								}
+							// if cube # result is \0 transfer the result from the old result to temp result  //
+							else if ( (strcmp(curr->inter_cube_res[j], "\0") == 0) ) 
+								{
+									// if the empty record in curr is at the end of the list then transfer cube //
+									// from the old result to the temp result and advance index //
+									if (j == (universe_length/2)-1 )
+										{
+											temp_result[temp_res_index] = strcpy(temp_result[temp_res_index], old_result[i]);	
+											temp_res_index++;
+											continue;
+										}
+										// if not then the next record in curr must be explored //
+										else
+											{
+												continue;
+											}
+								} 
+							// if the resulting cube has 00s in then its is invalid and the memory is released // 
+							if ( count_zeros(temp_result[temp_res_index], universe_length) != 0 )
+								{
+									// release memory for invalid entry //
+									temp_result[temp_res_index] = (char*)realloc(temp_result[temp_res_index], sizeof(char) );
+									if (temp_result[temp_res_index] == NULL)
+										{
+											fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+											return TCL_ERROR;
+										}
+									temp_result[temp_res_index] = "\0";
+									continue;
+								}
+								// increment temp result location in order to keep track between cubes //
+								temp_res_index++;
+							}
 				}
-			}
 			
 			old_result = (char**)realloc(old_result, sizeof(char*)*temp_memory_size );
 			if (old_result == NULL)
@@ -1396,28 +1396,28 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 								{
 									// make sure it begins with an n otherwise get next token //
 									if ( token[0] != 'n')
-									{
-										// get the next token //
-										token = strtok(NULL, delim);
-										token = stripwhite(token);
-										next_state = FIRST_NODE;
-										break;
-									}
+										{
+											// get the next token //
+											token = strtok(NULL, delim);
+											token = stripwhite(token);
+											next_state = FIRST_NODE;
+											break;
+										}
 									else
 									{
 										// reserve memory for upcoming node line according to line size //
 										nodes = (char **) realloc(nodes, sizeof(char*)* (i+1) );
 										if (nodes == NULL)
-										{
-											fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
-											return TCL_ERROR;
-										}
+											{
+												fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+												return TCL_ERROR;
+											}
 										nodes[i] = (char *) calloc(read_line+1,sizeof(char));
 										if (nodes[i] == NULL)
-										{
-											fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-											return TCL_ERROR;
-										}
+											{
+												fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+												return TCL_ERROR;
+											}
 										// appent node in string with a delimeter in order to make it easer to parse afterworts //
 										nodes[i] = strcat( nodes[i], token);
 										nodes[i] = strcat( nodes[i], ",");
@@ -1443,13 +1443,13 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 								{
 									// make sure it begins with an n otherwise get next token //
 									if ( token[0] != 'n')
-									{
-										// get the next token //
-										token = strtok(NULL, delim);
-										token = stripwhite(token);
-										next_state = SECOND_NODE;
-										break;
-									}
+										{
+											// get the next token //
+											token = strtok(NULL, delim);
+											token = stripwhite(token);
+											next_state = SECOND_NODE;
+											break;
+										}
 									// appent node in string with a delimeter in order to make it easer to parse afterworts //
 									nodes[i] = strcat( nodes[i], token);
 									nodes[i] = strcat( nodes[i], ",");
@@ -1508,4 +1508,5 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
 
+	return TCL_OK;
 }
