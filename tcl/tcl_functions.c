@@ -1404,31 +1404,31 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 											break;
 										}
 									else
-									{
-										// reserve memory for upcoming node line according to line size //
-										nodes = (char **) realloc(nodes, sizeof(char*)* (i+1) );
-										if (nodes == NULL)
-											{
-												fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
-												return TCL_ERROR;
-											}
-										nodes[i] = (char *) calloc(read_line+1,sizeof(char));
-										if (nodes[i] == NULL)
-											{
-												fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-												return TCL_ERROR;
-											}
-										// appent node in string with a delimeter in order to make it easer to parse afterworts //
-										nodes[i] = strcat( nodes[i], token);
-										nodes[i] = strcat( nodes[i], ",");
-										
-										// get the next token //
-										token = strtok(NULL, delim);
-										token = stripwhite(token);
-										next_state = SEPERATOR;		
-										break;								
+										{
+											// reserve memory for upcoming node line according to line size //
+											nodes = (char **) realloc(nodes, sizeof(char*)* (i+1) );
+											if (nodes == NULL)
+												{
+													fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+													return TCL_ERROR;
+												}
+											nodes[i] = (char *) calloc(read_line+1,sizeof(char));
+											if (nodes[i] == NULL)
+												{
+													fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+													return TCL_ERROR;
+												}
+											// appent node in string with a delimeter in order to make it easer to parse afterworts //
+											nodes[i] = strcat( nodes[i], token);
+											nodes[i] = strcat( nodes[i], ",");
+											
+											// get the next token //
+											token = strtok(NULL, delim);
+											token = stripwhite(token);
+											next_state = SEPERATOR;		
+											break;								
+										}
 									}
-								}
 							// skip seperator of nodes //
 							case SEPERATOR:
 								{
