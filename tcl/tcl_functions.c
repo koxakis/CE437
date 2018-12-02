@@ -34,6 +34,7 @@ int init_interpreter()
 	Tcl_CreateObjCommand(interpreter, "vim", vim, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "draw_graph", draw_graph, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "write_graph", write_graph, NULL, NULL);
+	Tcl_CreateObjCommand(interpreter, "graph_critical_path", graph_critical_path, NULL, NULL);
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
@@ -60,7 +61,7 @@ int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const
 	// protect from segmentation faults by checking the arguments //
 	if (argc != 2)
 	{
-		fprintf(stderr, RED"!!! (less) not enough arguments \n\x1B[0m less <file> \n"NRM);
+		fprintf(stderr, RED"!!! (vim) not enough arguments \n\x1B[0m vim <file> \n"NRM);
 		return TCL_ERROR;
 	}
 	// get filename argument //
@@ -1703,7 +1704,7 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	// protect from segmentation faults by checking the arguments //
 	if (argc != 2)
 	{
-		fprintf(stderr, RED"!!! (less) not enough arguments \n\x1B[0m less <file> \n"NRM);
+		fprintf(stderr, RED"!!! (draw_graph) not enough arguments \n\x1B[0m draw_graph <file> \n"NRM);
 		return TCL_ERROR;
 	}
 	// get filename argument //
@@ -1728,5 +1729,12 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	system(com_command);
 
 	free (com_command);
+	return TCL_OK;
+}
+
+int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+
+	
 	return TCL_OK;
 }

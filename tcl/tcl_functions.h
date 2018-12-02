@@ -97,6 +97,8 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
+int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
 // helper TCL functions //
 int do_sharp_2(char **, char*, char *, int, int);
 int count_zeros(char *, int);
