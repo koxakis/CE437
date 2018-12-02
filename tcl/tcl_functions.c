@@ -73,7 +73,7 @@ int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const
 		return TCL_ERROR;
 	}
 	// allocate memory for system command //
-	com_command = (char *) malloc((file_length ) * sizeof(char));
+	com_command = (char *) malloc((file_length + 3) * sizeof(char));
 	if (com_command == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -111,7 +111,7 @@ int less(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *cons
 		return TCL_ERROR;
 	}
 	// allocate memory for system command //
-	com_command = (char *) malloc((file_length ) * sizeof(char));
+	com_command = (char *) malloc((file_length + 4 ) * sizeof(char));
 	if (com_command == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -166,7 +166,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			return TCL_ERROR;
 		}
 
-		com_command = (char *) malloc((arg_length + dir_length) * sizeof(char));
+		com_command = (char *) malloc((arg_length + dir_length + 2) * sizeof(char));
 		if (com_command == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -184,7 +184,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			return TCL_ERROR;
 		}
 
-		com_command = (char *) malloc((dir_length) * sizeof(char));
+		com_command = (char *) malloc((dir_length + 2) * sizeof(char));
 		if (com_command == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -1695,6 +1695,38 @@ int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Ob
 
 int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
+	char command[] = "dotty";
+	char *arguments = NULL;
+	char *com_command = NULL;
+	int file_length=0;
 
+	// protect from segmentation faults by checking the arguments //
+	if (argc != 2)
+	{
+		fprintf(stderr, RED"!!! (less) not enough arguments \n\x1B[0m less <file> \n"NRM);
+		return TCL_ERROR;
+	}
+	// get filename argument //
+	// get length of file name from tcl environment global //
+	// through Tcl_GetStringFromObj which returns a nonNull length from the given pinter //
+	arguments = Tcl_GetStringFromObj(argv[1], &file_length);
+	if (arguments == NULL)
+	{
+		fprintf(stderr, RED"!!!Error while aquaring arguments  \n"NRM);
+		return TCL_ERROR;
+	}
+	// allocate memory for system command //
+	com_command = (char *) malloc((file_length + 5) * sizeof(char));
+	if (com_command == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		return TCL_ERROR;
+	}
+
+	// combine command and args to send to System //
+	sprintf(com_command, "%s %s", command, arguments);
+	system(com_command);
+
+	free (com_command);
 	return TCL_OK;
 }
