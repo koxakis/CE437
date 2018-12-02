@@ -1339,11 +1339,13 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 {
 
 	FILE *fp;
+	nodesT *nodes=NULL;
+	nodesT *new_nodes=NULL;
 
 	char *line=NULL;
 	char *file_name=NULL;
 	char *token=NULL;
-	char **nodes=NULL;
+	char *prev_node=NULL;
 	char delim[2]=" ";
 
 	int file_name_length;
@@ -1352,8 +1354,11 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 	unsigned long line_len=0;
 	unsigned long read_line;
-	unsigned long num_of_conns=0;
+	unsigned long node_count=0;
 	unsigned long i=0;
+	unsigned long connected_nodes_count=0;
+	unsigned long successor_count=1;
+	unsigned long prev_node_index=0;
 
 	if (argc != 2)
 		{
@@ -1372,135 +1377,262 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 			return TCL_ERROR;		
 		}
 
-	// allocate memory for node table containing //
-	nodes = (char**) malloc(sizeof(char*));
+	nodes = calloc(1, sizeof(nodesT));
 	if (nodes == NULL)
 		{
-			fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 			return TCL_ERROR;
 		}
-
 	// read lines until you read NULL // 
+	// first file pass count unique nodes // 
+	// function assumes input is in order //
 	while ( ( read_line = getline(&line, &line_len, fp) ) != -1 )
 		{
 			// retrive the first token from string // 
 			token = strtok(line, delim);
-			token = stripwhite(token);			
-			while ( token != NULL )
+			token = stripwhite(token);
+
+			// if input is the first node assign as prev node and incremet //
+			if (node_count == 0)
 				{
-					state = next_state;
-					switch (state)
+					// assign prev index as node count to keep track of previous node index //
+					prev_node_index = node_count;
+
+					// assign index to node //
+					nodes[node_count].node_index = node_count;
+
+					// allocate memory for node in array //
+					new_nodes = (nodesT*) realloc( nodes, sizeof(nodesT) * (node_count + 1) );
+					if (new_nodes == NULL)
 						{
-							// first n for node has been detected //
-							case FIRST_NODE:
-								{
-									// make sure it begins with an n otherwise get next token //
-									if ( token[0] != 'n')
-										{
-											// get the next token //
-											token = strtok(NULL, delim);
-											token = stripwhite(token);
-											next_state = FIRST_NODE;
-											break;
-										}
-									else
-										{
-											// reserve memory for upcoming node line according to line size //
-											nodes = (char **) realloc(nodes, sizeof(char*)* (i+1) );
-											if (nodes == NULL)
-												{
-													fprintf(stderr, RED"!!!Error in memory allocaiton \n"NRM);
-													return TCL_ERROR;
-												}
-											nodes[i] = (char *) calloc(read_line+1,sizeof(char));
-											if (nodes[i] == NULL)
-												{
-													fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-													return TCL_ERROR;
-												}
-											// appent node in string with a delimeter in order to make it easer to parse afterworts //
-											nodes[i] = strcat( nodes[i], token);
-											nodes[i] = strcat( nodes[i], ",");
-											
-											// get the next token //
-											token = strtok(NULL, delim);
-											token = stripwhite(token);
-											next_state = SEPERATOR;		
-											break;								
-										}
-									}
-							// skip seperator of nodes //
-							case SEPERATOR:
-								{
-									// disregard seperator between nodes //
-									token = strtok(NULL, delim);
-									token = stripwhite(token);		
-									next_state = SECOND_NODE;
-									break;
-								}
-							// second n for node has been detected //
-							case SECOND_NODE:
-								{
-									// make sure it begins with an n otherwise get next token //
-									if ( token[0] != 'n')
-										{
-											// get the next token //
-											token = strtok(NULL, delim);
-											token = stripwhite(token);
-											next_state = SECOND_NODE;
-											break;
-										}
-									// appent node in string with a delimeter in order to make it easer to parse afterworts //
-									nodes[i] = strcat( nodes[i], token);
-									nodes[i] = strcat( nodes[i], ",");
-									// get the next token //
-									token = strtok(NULL, delim);
-									token = stripwhite(token);
-									next_state = VALUE;
-									break;
-								}
-							// record the value of the node //
-							case VALUE:
-								{
-									// clean value from white characters //
-									token = stripwhite(token);
-									nodes[i] = strcat( nodes[i], token);
-									token = strtok(NULL, delim);
-									next_state = ITERATOR;
-									break;
-								} 
-							case ITERATOR:
-								{
-									i++;
-									num_of_conns++;
-									next_state = FIRST_NODE;
-									break;
-								}
-						}
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}							
+					nodes = new_nodes;
+
+					// reserve space for name and assign node name to the node for comparison with next nodes // 
+					nodes[node_count].node_name = calloc(strlen(token), sizeof(char));
+					if (nodes[node_count].node_name == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}	
+					nodes[node_count].node_name = strcpy( nodes[node_count].node_name, token);
+
+					node_count++;
+					continue;
 				}
-		} 
-	for(i=0; i <= num_of_conns; i++)
-		{
-			if( strcmp(nodes[i],"\0")!=0 )
-				{
-					printf(" %s \n", nodes[i]);
-				}		
-		}
+			else
+				{		
+					// if prev node is not the same as curr node then assign the curr node as prev node //
+					// and increment node count //	
+					if (strcmp( token, nodes[prev_node_index].node_name) != 0)
+						{
+							// assign previous node with the counted successor nodes //
+							nodes[prev_node_index].successor_count = successor_count;
+							
+							// allocate memory with the number of successor nodes as needed //
+							nodes[prev_node_index].successor = calloc( successor_count, sizeof(unsigned long));
+							if (nodes[prev_node_index].successor == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}	
+								
+							// assign prev index as node count to keep track of previous node index //
+							prev_node_index = node_count;
 
-	fclose(fp);
-	if (line != NULL)
-		{
-			free(line);
-		}
+							// allocate memory for new node ( node_count + 1) in order to store new node data //
+							new_nodes = (nodesT*) realloc( nodes, sizeof(nodesT) * (node_count + 1) );
+							if (new_nodes == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}							
+							
+							nodes = new_nodes;
 
-	for(i=0; i < num_of_conns; i++)
-		{
-			if( strcmp(nodes[i],"\0")!=0 )
-				{
-					free(nodes[i]);
-				}		
+							// reserve space for name and assign node name to the node for comparison with next nodes // 
+							nodes[node_count].node_name = calloc(strlen(token), sizeof(char));
+							if (nodes[node_count].node_name == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}	
+							nodes[node_count].node_name = strcpy( nodes[node_count].node_name, token);
+
+							// assign node index to node //
+							nodes[node_count].node_index = node_count;
+
+							// increase node count //
+							node_count++;
+
+							// reset successor node count for next node // 
+							successor_count = 1;
+							continue;
+
+						}
+					else
+						{
+							successor_count++;
+						}
+						// if the same node is detected increment successor count in order to reserve memory for successors in node //
+				}
 		}
-	free(nodes);	
+		free(token);
+
+		printf(" %ld \n", node_count);
+		for (i = 0; i < node_count; i++ )
+			{
+				printf("node: %s, node index: %d succ count: %ld\n ", nodes[i].node_name, nodes[i].node_index, nodes[i].successor_count);
+			}
+
+		// close file //
+		if ( fclose(fp) != 0 )
+			{
+				fprintf(stderr, RED"!!!Error in file closing \n"NRM);
+				return TCL_ERROR;					
+			}
+
+		// open a file descriptor based on a file name //
+		fp = fopen(file_name,"r");
+		if ( fp == NULL )
+			{
+				fprintf(stderr, RED"!!!Error in file opening \n"NRM);
+				return TCL_ERROR;		
+			}
+
+		prev_node = calloc(1, sizeof(char));
+		if (prev_node == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}
+
+		i = 0;
+		// read lines until you read null //
+		// second file pass in order to establish connections // 
+		while ( ( read_line = getline(&line, &line_len, fp) ) != -1 )
+			{
+				// retrive the first token from string // 
+				token = strtok(line, delim);
+				token = stripwhite(token);
+
+				while ( token != NULL )
+					{
+						state = next_state;
+		
+						switch (state)
+							{
+								case FIRST_NODE:
+									{
+										// if input is the first node assign as prev node and incremet //
+										if (connected_nodes_count == 0)
+											{					
+												// assign node name in node for printing 					
+												nodes[i].node_name = calloc(strlen(token), sizeof(char));
+												if (nodes[i].node_name == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}	
+												nodes[i].node_name = strcpy( nodes[i].node_name, token);
+												
+												// allocate memory for successors for node in the size of number of nodes at first //
+												nodes[i].successor = calloc( node_count, sizeof(char));
+												if (nodes[i].successor == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}	
+												// allocate memory for predecessors for node in the size of number of nodes at first //
+												nodes[i].predecessor = calloc( node_count, sizeof(char));
+												if (nodes[i].predecessor == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}
+
+												// assign prev node as the nodes connections that are being explored //
+												// in order to check the next nodes if they are the same or not //
+												prev_node = (char*) realloc( prev_node, sizeof(char) * strlen(token));
+												if (prev_node == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}
+												prev_node = strcpy( prev_node, token);
+
+												// go to the next state in order to connect this nodes successors //
+												next_state = SEPERATOR;
+												token = strtok(line, delim);
+												token = stripwhite(token);
+												break;
+											}
+										else 
+											{
+												// if the node is not the same then we have moved to a new node and need to reset the counters //
+												// and increment the node count //
+												if ( strcmp(token, prev_node) != 0)
+													{ 
+														// reset connected nodes count to 0 in order to start counting new nodes //
+														connected_nodes_count = 0;
+
+														// increment i in order to represent a new node to find the connections to //
+														i++;
+
+														next_state = FIRST_NODE;
+														token = strtok(line, delim);
+														token = stripwhite(token);															
+														break;
+													}
+												// if not then we move to examine the node and connect it to a successor //
+												else
+													{
+														next_state = SEPERATOR;
+														token = strtok(line, delim);
+														token = stripwhite(token);
+														break;
+													}
+						
+											}
+										
+										break;
+									}
+								case SEPERATOR:
+									{
+										if ( strcmp( token, "->" ) == 0)
+											{
+												next_state = SECOND_NODE;
+												token = strtok(line, delim);
+												token = stripwhite(token);
+												break;
+											} 
+										token = strtok(line, delim);
+										token = stripwhite(token);
+										next_state = SEPERATOR;
+										break;
+										
+									}
+								case SECOND_NODE:
+									{
+										
+									}	
+								case VALUE:
+									{
+
+									}	
+								case ITERATOR:
+									{
+
+									}				
+								default:
+									break;
+							}
+					}
+
+			}
+
 	return TCL_OK;
 }
 
