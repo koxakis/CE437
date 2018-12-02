@@ -1335,17 +1335,17 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 
 	return TCL_OK;
 }
+
+
 int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
 
 	FILE *fp;
-	nodesT *nodes=NULL;
 	nodesT *new_nodes=NULL;
 
 	char *line=NULL;
 	char *file_name=NULL;
 	char *token=NULL;
-	char *prev_node=NULL;
 	char delim[2]=" ";
 
 	int file_name_length;
@@ -1356,9 +1356,11 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	unsigned long read_line;
 	unsigned long node_count=0;
 	unsigned long i=0;
-	unsigned long connected_nodes_count=0;
+	unsigned long j=0;
+	unsigned long source_node_index=0;
 	unsigned long successor_count=1;
 	unsigned long prev_node_index=0;
+	unsigned long successor_index=0;
 
 	if (argc != 2)
 		{
@@ -1377,12 +1379,25 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 			return TCL_ERROR;		
 		}
 
+	if ( nodes != NULL )
+	{
+		for (i = 0; i < node_count; i++ )
+		{
+			free(nodes[i].node_name);
+			free(nodes[i].successor);
+		}	
+		free(nodes);
+	}
+
+	nodes = NULL;
+
 	nodes = calloc(1, sizeof(nodesT));
 	if (nodes == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 			return TCL_ERROR;
 		}
+
 	// read lines until you read NULL // 
 	// first file pass count unique nodes // 
 	// function assumes input is in order //
@@ -1428,12 +1443,20 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 					// and increment node count //	
 					if (strcmp( token, nodes[prev_node_index].node_name) != 0)
 						{
+							
 							// assign previous node with the counted successor nodes //
 							nodes[prev_node_index].successor_count = successor_count;
 							
 							// allocate memory with the number of successor nodes as needed //
 							nodes[prev_node_index].successor = calloc( successor_count, sizeof(unsigned long));
 							if (nodes[prev_node_index].successor == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}	
+
+							nodes[prev_node_index].value = calloc( successor_count, sizeof(int));
+							if (nodes[prev_node_index].value == NULL)
 								{
 									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 									return TCL_ERROR;
@@ -1472,20 +1495,13 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 							continue;
 
 						}
-					else
-						{
-							successor_count++;
-						}
-						// if the same node is detected increment successor count in order to reserve memory for successors in node //
+						// increment successor count if the same node is detected //
+
+						successor_count++;
+					
 				}
 		}
 		free(token);
-
-		printf(" %ld \n", node_count);
-		for (i = 0; i < node_count; i++ )
-			{
-				printf("node: %s, node index: %d succ count: %ld\n ", nodes[i].node_name, nodes[i].node_index, nodes[i].successor_count);
-			}
 
 		// close file //
 		if ( fclose(fp) != 0 )
@@ -1502,13 +1518,6 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 				return TCL_ERROR;		
 			}
 
-		prev_node = calloc(1, sizeof(char));
-		if (prev_node == NULL)
-			{
-				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-				return TCL_ERROR;
-			}
-
 		i = 0;
 		// read lines until you read null //
 		// second file pass in order to establish connections // 
@@ -1520,118 +1529,126 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 				while ( token != NULL )
 					{
-						state = next_state;
-		
+						state = next_state;	
 						switch (state)
 							{
 								case FIRST_NODE:
 									{
-										// if input is the first node assign as prev node and incremet //
-										if (connected_nodes_count == 0)
-											{					
-												// assign node name in node for printing 					
-												nodes[i].node_name = calloc(strlen(token), sizeof(char));
-												if (nodes[i].node_name == NULL)
-													{
-														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-														return TCL_ERROR;
-													}	
-												nodes[i].node_name = strcpy( nodes[i].node_name, token);
-												
-												// allocate memory for successors for node in the size of number of nodes at first //
-												nodes[i].successor = calloc( node_count, sizeof(char));
-												if (nodes[i].successor == NULL)
-													{
-														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-														return TCL_ERROR;
-													}	
-												// allocate memory for predecessors for node in the size of number of nodes at first //
-												nodes[i].predecessor = calloc( node_count, sizeof(char));
-												if (nodes[i].predecessor == NULL)
-													{
-														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-														return TCL_ERROR;
-													}
+										if ( strcmp( nodes[source_node_index].node_name, token) != 0 )
+											{
+												// if node name is different then increment the source node to build the connections of the next //
+												source_node_index++;
 
-												// assign prev node as the nodes connections that are being explored //
-												// in order to check the next nodes if they are the same or not //
-												prev_node = (char*) realloc( prev_node, sizeof(char) * strlen(token));
-												if (prev_node == NULL)
-													{
-														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-														return TCL_ERROR;
-													}
-												prev_node = strcpy( prev_node, token);
-
-												// go to the next state in order to connect this nodes successors //
+												// successor index is reset to count new connections //
+												successor_index = 0;
 												next_state = SEPERATOR;
-												token = strtok(line, delim);
-												token = stripwhite(token);
+												token = strtok(NULL, delim);
 												break;
 											}
-										else 
+										else
 											{
-												// if the node is not the same then we have moved to a new node and need to reset the counters //
-												// and increment the node count //
-												if ( strcmp(token, prev_node) != 0)
-													{ 
-														// reset connected nodes count to 0 in order to start counting new nodes //
-														connected_nodes_count = 0;
-
-														// increment i in order to represent a new node to find the connections to //
-														i++;
-
-														next_state = FIRST_NODE;
-														token = strtok(line, delim);
-														token = stripwhite(token);															
-														break;
-													}
-												// if not then we move to examine the node and connect it to a successor //
-												else
-													{
-														next_state = SEPERATOR;
-														token = strtok(line, delim);
-														token = stripwhite(token);
-														break;
-													}
-						
+												next_state = SEPERATOR;
+												token = strtok(NULL, delim);
+												break;
 											}
-										
 										break;
 									}
 								case SEPERATOR:
 									{
+										// skip seperator //
 										if ( strcmp( token, "->" ) == 0)
 											{
 												next_state = SECOND_NODE;
-												token = strtok(line, delim);
-												token = stripwhite(token);
+												token = strtok(NULL, delim);
 												break;
 											} 
-										token = strtok(line, delim);
-										token = stripwhite(token);
+										token = strtok(NULL, delim);
 										next_state = SEPERATOR;
 										break;
 										
 									}
 								case SECOND_NODE:
 									{
+										// check if this is the last node in order to skip assigning 
+										if ( (nodes[source_node_index].successor_count == 0) )
+											{
+												next_state = FIRST_NODE;
+												break;
+											}
+										// if node points to end it means this is a terminating node and it needs to 
+										if ( ( strcmp( token, "end" ) == 0 ) )
+											{
+												// reset successor_count in order to denode ending node and release memory // 
+												nodes[source_node_index].successor_count = 0;
+
+												nodes[source_node_index].successor = realloc( nodes[source_node_index].successor, sizeof(unsigned long));
+												if (nodes[source_node_index].successor == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}	
+
+												nodes[source_node_index].value = realloc( nodes[source_node_index].value, sizeof(int));
+												if (nodes[source_node_index].value == NULL)
+													{
+														fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+														return TCL_ERROR;
+													}	
+
+												next_state = FIRST_NODE;
+												break;											
+											}
 										
+										// scan nodes in order to find the corresponding node index //
+										for ( i = 0; i < node_count; i++)
+											{
+												if ( strcmp( nodes[i].node_name, token) == 0)
+													{
+														nodes[source_node_index].successor[successor_index] = nodes[i].node_index;
+														break;
+													}
+											}
+										token = strtok(NULL, delim);
+										token = stripwhite(token);										
+										next_state = VALUE;
+										break;
+								
 									}	
 								case VALUE:
 									{
+										// assign value to the corresponding node //
+										nodes[source_node_index].value[successor_index] = atoi(token);
+										successor_index++;
 
+										token = strtok(NULL, delim);
+										next_state = FIRST_NODE;
+										break;
 									}	
-								case ITERATOR:
-									{
-
-									}				
 								default:
 									break;
 							}
 					}
 
 			}
+
+
+	// close file //
+	if ( fclose(fp) != 0 )
+		{
+			fprintf(stderr, RED"!!!Error in file closing \n"NRM);
+			return TCL_ERROR;					
+		}
+
+	printf("Node count is %ld \n", node_count);
+	for (i = 0; i < node_count; i++ )
+		{
+			printf("\nNode: %s, Node index: %d Successor count: %ld \n", nodes[i].node_name, nodes[i].node_index, nodes[i].successor_count);
+
+			for (j = 0; j < nodes[i].successor_count; j++)
+				{
+					printf(" Successor: %s Successor index: %ld, value: %d \n", nodes[nodes[i].successor[j]].node_name, nodes[i].successor[j], nodes[i].value[j]);
+				}
+		}
 
 	return TCL_OK;
 }

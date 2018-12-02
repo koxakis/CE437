@@ -47,6 +47,7 @@ typedef struct nodes
 
 }nodesT;
 
+nodesT *nodes;
 typedef struct inter_cube_list { 
 
 	char **inter_cube_res;
