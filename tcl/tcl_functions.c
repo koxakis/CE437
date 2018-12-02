@@ -33,7 +33,7 @@ int init_interpreter()
 	Tcl_CreateObjCommand(interpreter, "read_graph", read_graph, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "vim", vim, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "draw_graph", draw_graph, NULL, NULL);
-
+	Tcl_CreateObjCommand(interpreter, "write_graph", write_graph, NULL, NULL);
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
@@ -1354,13 +1354,14 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 	unsigned long line_len=0;
 	unsigned long read_line;
-	unsigned long node_count=0;
 	unsigned long i=0;
 	unsigned long j=0;
 	unsigned long source_node_index=0;
 	unsigned long successor_count=1;
 	unsigned long prev_node_index=0;
 	unsigned long successor_index=0;
+
+	node_count = 0;
 
 	if (argc != 2)
 		{
@@ -1653,6 +1654,44 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	return TCL_OK;
 }
 
+int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+
+	unsigned long i, j;
+
+	FILE *fp;
+
+	// open a file descriptor based on a file name //
+	fp = fopen("graph_to_draw.dot","w");
+	if ( fp == NULL )
+		{
+			fprintf(stderr, RED"!!!Error in file opening \n"NRM);
+			return TCL_ERROR;		
+		}
+
+	fprintf(fp,"digraph {\n");
+	fprintf(fp,"\n");
+	fprintf(fp,"node [fillcolor=\"lightgray\",style=\"filled,solid\",style=\"filled,solid\",fontcolor=\"red\"]\n");
+	fprintf(fp,"\n");
+
+	for (i = 0; i < node_count; i++ )
+		{
+			for (j = 0; j < nodes[i].successor_count; j++)
+				{
+					fprintf( fp, "%s -> %s[label=\"%d\",weight=\"%d\"];\n", nodes[i].node_name, nodes[nodes[i].successor[j]].node_name, nodes[i].value[j], nodes[i].value[j]);
+				}
+		}
+	fprintf(fp,"}\n");
+
+	// close file //
+	if ( fclose(fp) != 0 )
+		{
+			fprintf(stderr, RED"!!!Error in file closing \n"NRM);
+			return TCL_ERROR;					
+		}
+
+	return TCL_OK;
+}
 
 int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {

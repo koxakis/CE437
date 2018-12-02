@@ -47,6 +47,8 @@ typedef struct nodes
 
 }nodesT;
 
+unsigned long node_count;
+
 nodesT *nodes;
 typedef struct inter_cube_list { 
 
@@ -92,6 +94,8 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 // helper TCL functions //
 int do_sharp_2(char **, char*, char *, int, int);
