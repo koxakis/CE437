@@ -35,9 +35,11 @@ typedef struct nodes
 	
 	int node_index;
 
-	int *predecessor;
+	unsigned long *predecessor;
 
 	unsigned long predecessor_count;
+
+	int *pred_value;
 
 	unsigned long *successor;
 

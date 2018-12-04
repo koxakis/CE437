@@ -47,6 +47,13 @@ int init_interpreter()
 // delete created interpreter //
 int del_interpreter()
 {
+	int i;
+	for (i = 0; i < node_count; i++ )
+		{
+			free(nodes[i].node_name);
+			free(nodes[i].successor);
+		}	
+		free(nodes);
 	Tcl_FreeResult(interpreter);
 	Tcl_DeleteInterp(interpreter);
 	return TCL_ERROR;
@@ -1337,41 +1344,26 @@ int off_f(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *con
 	return TCL_OK;
 }
 
-
-int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+int prepair_graph(char *file_name)
 {
 
 	FILE *fp;
 	nodesT *new_nodes=NULL;
 
 	char *line=NULL;
-	char *file_name=NULL;
 	char *token=NULL;
 	char delim[2]=" ";
 
-	int file_name_length;
 	int state;
 	int next_state=1;
 
 	unsigned long line_len=0;
 	unsigned long read_line;
 	unsigned long i=0;
-	unsigned long j=0;
 	unsigned long source_node_index=0;
 	unsigned long successor_count=1;
 	unsigned long prev_node_index=0;
 	unsigned long successor_index=0;
-
-	node_count = 0;
-
-	if (argc != 2)
-		{
-			fprintf(stderr, RED"!!! (read_graph) illegal arguments\n\x1B[0m read_graph <file_name>\n");
-			return TCL_ERROR;
-		}
-
-	// get file name from command //
-	file_name = Tcl_GetStringFromObj(argv[1], &file_name_length);
 
 	// open a file descriptor based on a file name //
 	fp = fopen(file_name,"r");
@@ -1448,6 +1440,7 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 							
 							// assign previous node with the counted successor nodes //
 							nodes[prev_node_index].successor_count = successor_count;
+							nodes[prev_node_index].predecessor_count = 0;
 							
 							// allocate memory with the number of successor nodes as needed //
 							nodes[prev_node_index].successor = calloc( successor_count, sizeof(unsigned long));
@@ -1607,6 +1600,15 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 												if ( strcmp( nodes[i].node_name, token) == 0)
 													{
 														nodes[source_node_index].successor[successor_index] = nodes[i].node_index;
+														nodes[i].predecessor_count++;
+
+														nodes[i].predecessor = realloc( nodes[i].predecessor, sizeof(unsigned long) * nodes[i].predecessor_count);
+														if (nodes[i].predecessor == NULL)
+															{
+																fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+																return TCL_ERROR;
+															}	
+														nodes[i].predecessor[nodes[i].predecessor_count - 1] = nodes[source_node_index].node_index;
 														break;
 													}
 											}
@@ -1640,15 +1642,44 @@ int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 			fprintf(stderr, RED"!!!Error in file closing \n"NRM);
 			return TCL_ERROR;					
 		}
+	return TCL_OK;
+}
+
+int read_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+
+	char *file_name=NULL;
+
+	int file_name_length;
+	unsigned long i=0;
+	unsigned long j=0;
+
+	node_count = 0;
+
+	if (argc != 2)
+		{
+			fprintf(stderr, RED"!!! (read_graph) illegal arguments\n\x1B[0m read_graph <file_name>\n");
+			return TCL_ERROR;
+		}
+
+	// get file name from command //
+	file_name = Tcl_GetStringFromObj(argv[1], &file_name_length);
+
+	prepair_graph(file_name);
 
 	printf("Node count is %ld \n", node_count);
 	for (i = 0; i < node_count; i++ )
 		{
-			printf("\nNode: %s, Node index: %d Successor count: %ld \n", nodes[i].node_name, nodes[i].node_index, nodes[i].successor_count);
+			printf("\nNode: %s, Node index: %d Successor count: %ld Predecessor count: %ld\n", nodes[i].node_name, nodes[i].node_index, nodes[i].successor_count, nodes[i].predecessor_count);
 
 			for (j = 0; j < nodes[i].successor_count; j++)
 				{
 					printf(" Successor: %s Successor index: %ld, value: %d \n", nodes[nodes[i].successor[j]].node_name, nodes[i].successor[j], nodes[i].value[j]);
+				}
+			printf("\n");
+			for (j = 0; j < nodes[i].predecessor_count; j++)
+				{
+					printf(" Predecessor: %s predecessor index: %ld\n", nodes[nodes[i].predecessor[j]].node_name, nodes[i].predecessor[j]);
 				}
 		}
 
@@ -1675,9 +1706,9 @@ int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Ob
 	fprintf(fp,"node [fillcolor=\"lightgray\",style=\"filled,solid\",style=\"filled,solid\",fontcolor=\"red\"]\n");
 	fprintf(fp,"\n");
 
-	for (i = 0; i < node_count; i++ )
+	for ( i = 0; i < node_count; i++ )
 		{
-			for (j = 0; j < nodes[i].successor_count; j++)
+			for ( j = 0; j < nodes[i].successor_count; j++)
 				{
 					fprintf( fp, "%s -> %s[label=\"%d\",weight=\"%d\"];\n", nodes[i].node_name, nodes[nodes[i].successor[j]].node_name, nodes[i].value[j], nodes[i].value[j]);
 				}
@@ -1734,6 +1765,7 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
+
 
 	
 	return TCL_OK;
