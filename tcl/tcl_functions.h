@@ -33,13 +33,17 @@ typedef struct nodes
 {
 	char *node_name;
 	
-	int node_index;
+	unsigned long node_index;
 
 	unsigned long *predecessor;
 
 	unsigned long predecessor_count;
 
-	int *pred_value;
+	int max_value;
+
+	unsigned long max_predecessor;
+
+	unsigned long remaining_successors;
 
 	unsigned long *successor;
 
@@ -52,6 +56,7 @@ typedef struct nodes
 unsigned long node_count;
 
 nodesT *nodes;
+
 typedef struct inter_cube_list { 
 
 	char **inter_cube_res;
