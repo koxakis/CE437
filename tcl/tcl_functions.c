@@ -1874,11 +1874,17 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 			// for every successor of the starting node assign the maximum weight //
 			for ( i = 0; i < nodes[explored_queue_node_index].successor_count; i++ )
 				{
+
 					// get current nodes successor index in order o assign the max value //
 					current_node_successor_index = nodes[explored_queue_node_index].successor[i];
 
 					// calculate successors node weight by adding the value of the launching node and the value of the edge //
 					max_value_test = nodes[explored_queue_node_index].value[i] + nodes[explored_queue_node_index].max_value;
+					#if defined(DEBUG)
+					
+						printf ( "DEBUG: Current successor node index/ name %ld/ %s with value %d\n", nodes[current_node_successor_index].node_index, nodes[current_node_successor_index].node_name, max_value_test );
+
+					#endif // DEBUG
 
 					// compair successors node weight with the newly calculated weight //
 					if ( max_value_test > nodes[current_node_successor_index].max_value)
@@ -1890,7 +1896,7 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 							nodes[current_node_successor_index].max_predecessor = nodes[explored_queue_node_index].node_index;
 						}
 				}
-			
+
 			if ( nodes[explored_queue_node_index].successor_count != 0 )
 				{
 					// assign the max weight to the current successor index //
@@ -1909,8 +1915,13 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 							max_value_index = nodes[current_node_successor_index].node_index;
 						}
 				}
+			#if defined(DEBUG)
+			
+				printf ( "DEBUG: Current MAX node index/ name %ld/ %s %d\n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name, max_value_test );
 
+			#endif // DEBUG			
 			// expand explred queue accordingly //
+			
 			explored_queue_size++;
 			new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size) );
 			if (new_ptr == NULL)
@@ -1977,6 +1988,7 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 			#if defined(DEBUG)
 			
 				printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name );
+				printf ( "DEBUG INDEXES explored_queue_index %ld \n\n", explored_queue_index);
 
 			#endif // DEBUG
 		}
