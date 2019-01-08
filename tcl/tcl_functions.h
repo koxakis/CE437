@@ -27,6 +27,8 @@
 #define VALUE 4
 #define ITERATOR 5
 
+#define DEBUG
+
 Tcl_Interp *interpreter;
 
 typedef struct nodes

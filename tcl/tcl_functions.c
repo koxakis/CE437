@@ -1861,6 +1861,13 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 	explored_queue_size = starting_nodes_count;
 	explored_queue_node_index = explored_queue[explored_queue_index];
 
+	
+	#if defined(DEBUG)
+	
+		printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name );
+
+	#endif // DEBUG
+	
 	// while the explored queue is not empty //
 	while ( remaining_nodes != 0)
 		{
@@ -1958,15 +1965,20 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 						}
 				}
 			else
-				//{
+				{
 					// increment explored queue index //
 
 					explored_queue_index++;	
-				//}
+				}
 			// reduse the amount of remaining nodes to be checked //
 			nodes[explored_queue_node_index].remaining_successors--;
 			// assign the next node index //
 			explored_queue_node_index = explored_queue[explored_queue_index];
+			#if defined(DEBUG)
+			
+				printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name );
+
+			#endif // DEBUG
 		}
 
 		// iterate max_predecessors and print them//
