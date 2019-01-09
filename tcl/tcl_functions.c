@@ -1434,7 +1434,14 @@ int prepair_graph(char *file_name)
 					nodes[node_count].successor = NULL;
 					nodes[node_count].predecessor = NULL;
 					nodes[node_count].value = NULL;
-
+					nodes[node_count].successor_count = 0;
+					nodes[node_count].predecessor_count = 0;
+					nodes[node_count].remaining_successors = 0;
+					nodes[node_count].remaining_predecessor = 0;
+					// assign node index to node //
+					nodes[node_count].node_index = node_count;							
+					nodes[node_count].max_predecessor = 0;
+					nodes[node_count].max_value = 0;
 					// reserve space for name and assign node name to the node for comparison with next nodes // 
 					nodes[node_count].node_name = calloc(strlen(token) + 1, sizeof(char));
 					if (nodes[node_count].node_name == NULL)
@@ -1499,6 +1506,7 @@ int prepair_graph(char *file_name)
 							nodes[node_count].successor_count = 0;
 							nodes[node_count].predecessor_count = 0;
 							nodes[node_count].remaining_successors = 0;
+							nodes[node_count].remaining_predecessor = 0;
 							// assign node index to node //
 							nodes[node_count].node_index = node_count;							
 							nodes[node_count].max_predecessor = 0;
@@ -1807,19 +1815,23 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 {
 
 	unsigned long *explored_queue = NULL;
-	unsigned long *new_ptr=NULL;
+	unsigned long *new_ptr = NULL;
 
-	unsigned long starting_nodes_count=0;
+	unsigned long *starting_queue = NULL;
+
+	unsigned long starting_nodes_count = 0;
+	unsigned long starting_nodes_index = 0;
 	unsigned long i = 0;
 
 	unsigned long explored_queue_index = 0;
-	unsigned long explored_queue_size = 0;
-	unsigned long explored_queue_node_index=0;
-	unsigned long current_node_successor_index=0;
- 	unsigned long max_value_index=0;
-	int max_value_test=0;
+	unsigned long explored_queue_size = 1;
+	unsigned long current_node_index = 0;
+	unsigned long current_node_successor_index = 0;
+	unsigned long current_node_backtrack_index = 0;
+ 	unsigned long max_value_index = 0;
+	int max_value_test = 0;
 	int remaining_nodes=node_count;
-	unsigned long current_node_index=0;
+	unsigned long current_node_successor_max_index = 0;
 
 
 	for ( i = 0; i < node_count; i++ )
@@ -1827,10 +1839,18 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 			nodes[i].max_value = 0;
 			nodes[i].max_predecessor = nodes[i].node_index;
 			nodes[i].remaining_successors = nodes[i].successor_count;
+			nodes[i].remaining_predecessor = nodes[i].predecessor_count;
 		} 
 
 	explored_queue = calloc( 1, sizeof(unsigned long));
 	if (explored_queue == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		return TCL_ERROR;
+	}
+
+	starting_queue = calloc( 1, sizeof(unsigned long));
+	if (starting_queue == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 		return TCL_ERROR;
@@ -1841,121 +1861,56 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 		{
 			if ( nodes[i].predecessor_count == 0 )
 				{
-					explored_queue[starting_nodes_count] = nodes[i].node_index;
+					starting_queue[starting_nodes_count] = nodes[i].node_index;
 
 					starting_nodes_count++;
 
-					new_ptr = (unsigned long*)realloc(explored_queue, (sizeof(unsigned long) * (starting_nodes_count + 1)) );
+					new_ptr = (unsigned long*) realloc(starting_queue, (sizeof(unsigned long) * (starting_nodes_count + 1)) );
+
 					if (new_ptr == NULL)
 						{
 							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
 							return TCL_ERROR;
 						}			
-					explored_queue = new_ptr;
+					starting_queue = new_ptr;
+
 				}
 		}
 	// assign node index from explore queue in order to start the search //
 	// this points to the index of the first node in nodes //
 	// it indicates the current node //
 
-	explored_queue_size = starting_nodes_count;
-	explored_queue_node_index = explored_queue[explored_queue_index];
+	current_node_index = starting_queue[starting_nodes_index];
 
 	
 	#if defined(DEBUG)
 	
-		printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name );
+		printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[current_node_index].node_index, nodes[current_node_index].node_name );
 
+		for (i = 0; i < starting_nodes_count; i++)
+			{
+				printf( "DEBUG: starting_nodes : %ld\n", starting_queue[i] ); 
+			}
 	#endif // DEBUG
 	
 	// while the explored queue is not empty //
 	while ( remaining_nodes != 0)
 		{
-			// for every successor of the starting node assign the maximum weight //
-			for ( i = 0; i < nodes[explored_queue_node_index].successor_count; i++ )
+
+			if ( nodes[current_node_index].remaining_successors == 0)
 				{
-
-					// get current nodes successor index in order o assign the max value //
-					current_node_successor_index = nodes[explored_queue_node_index].successor[i];
-
-					// calculate successors node weight by adding the value of the launching node and the value of the edge //
-					max_value_test = nodes[explored_queue_node_index].value[i] + nodes[explored_queue_node_index].max_value;
-					#if defined(DEBUG)
-					
-						printf ( "DEBUG: Current successor node index/ name %ld/ %s with value %d\n", nodes[current_node_successor_index].node_index, nodes[current_node_successor_index].node_name, max_value_test );
-
-					#endif // DEBUG
-
-					// compair successors node weight with the newly calculated weight //
-					if ( max_value_test > nodes[current_node_successor_index].max_value)
+					i = explored_queue_index;
+					while ( nodes[i].remaining_successors == 0 )
 						{
-							// if greater assign to node value //
-							nodes[current_node_successor_index].max_value = max_value_test;
-							// maybe add predecessor //
-							// assign previous max to the node that this node is the successor to //
-							nodes[current_node_successor_index].max_predecessor = nodes[explored_queue_node_index].node_index;
-						}
-				}
+							current_node_backtrack_index = explored_queue[i];
 
-			if ( nodes[explored_queue_node_index].successor_count != 0 )
-				{
-					// assign the max weight to the current successor index //
-					max_value_index = nodes[explored_queue_node_index].successor[0];
-				}
-
-			// iterate successors in node in explored queue //
-			for ( i = 1; i < nodes[explored_queue_node_index].successor_count; i++ )
-				{
-					// use again as successor index in order to find the max wight //
-					current_node_successor_index = nodes[explored_queue_node_index].successor[i];
-
-					// if max_value in current successor node is greater than the max_value_index node switch //
-					if ( nodes[max_value_index].max_value < nodes[current_node_successor_index].max_value )
-						{					
-							max_value_index = nodes[current_node_successor_index].node_index;
-						}
-				}
-			#if defined(DEBUG)
-			
-				printf ( "DEBUG: Current MAX node index/ name %ld/ %s %d\n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name, max_value_test );
-
-			#endif // DEBUG			
-			// expand explred queue accordingly //
-			
-			explored_queue_size++;
-			new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size) );
-			if (new_ptr == NULL)
-				{
-					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-					return TCL_ERROR;
-				}	
-			explored_queue = new_ptr;
-
-			// put new max successor node in queue to be checked //	
-			explored_queue[explored_queue_index + starting_nodes_count] = max_value_index;
-
-			// save max node index to current node index //
-			current_node_index = max_value_index;
-
-			// if remaining successors are 0 check and pop the stack //
-			if ( nodes[current_node_index].remaining_successors == 0)		
-				{
-					for ( i = explored_queue_index; i > 0; i--)
-						{
-							// get current node index from queue //
-							current_node_index = explored_queue[i];
-
-							// check if current node has remaining successors //
-							if ( nodes[current_node_index].remaining_successors == 0)
+							if ( nodes[current_node_backtrack_index].remaining_successors == 0 )
 								{
-
-									// reduse index //
-									explored_queue_index--;
-
-									//reduse the remaining nodes
 									remaining_nodes--;
+									explored_queue_index--;
 									
 									explored_queue_size--;
+
 									if ( explored_queue_size == 0)
 										{
 											explored_queue_size = 1;
@@ -1968,27 +1923,120 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 											return TCL_ERROR;
 										}	
 									explored_queue = new_ptr;	
+									#if defined(DEBUG)
+									
+										printf ( "DEBUG: Popped node index/ name %ld/ %s with value %d\n", nodes[current_node_backtrack_index].node_index, nodes[current_node_backtrack_index].node_name, nodes[current_node_backtrack_index].max_value );
+							
+										printf ( "DEBUG INDEXES in POP explored_queue_index %ld, explored_queue_size %ld, remaining_nodes %d \n\n", explored_queue_index, explored_queue_size, remaining_nodes);
+
+									#endif // DEBUG
 								}
-							else
-								{
-									break;
-								}
-						}
+								i--;
+
+						} 
+
+					continue;
 				}
 			else
 				{
-					// increment explored queue index //
+					// for every successor of the starting node assign the maximum weight //
+					for ( i = 0; i < nodes[current_node_index].successor_count; i++ )
+						{
 
-					explored_queue_index++;	
+							// get current nodes successor index in order o assign the max value //
+							current_node_successor_index = nodes[current_node_index].successor[i];
+
+							// calculate successors node weight by adding the value of the launching node and the value of the edge //
+							max_value_test = nodes[current_node_index].value[i] + nodes[current_node_index].max_value;
+
+							#if defined(DEBUG)
+							
+								printf ( "DEBUG: Current successor node index/ name %ld/ %s with value %d\n", nodes[current_node_successor_index].node_index, nodes[current_node_successor_index].node_name, max_value_test );
+
+							#endif // DEBUG
+
+							// compair successors node weight with the newly calculated weight //
+							if ( (max_value_test > nodes[current_node_successor_index].max_value) && (nodes[current_node_successor_index].node_index != nodes[current_node_index].max_predecessor ) ) 
+								{
+									// if greater assign to node value //
+									nodes[current_node_successor_index].max_value = max_value_test;
+									// maybe add predecessor //
+									// assign previous max to the node that this node is the successor to //
+									nodes[current_node_successor_index].max_predecessor = nodes[current_node_index].node_index;
+								}
+						}
+
+					if ( nodes[current_node_index].successor_count != 0 )
+						{
+							// assign the max weight to the current successor index //
+							max_value_index = nodes[current_node_index].successor[0];
+						}
+
+					// iterate successors in node in explored queue //
+					for ( i = 1; i < nodes[current_node_index].successor_count; i++ )
+						{
+							// use again as successor index in order to find the max wight //
+							current_node_successor_index = nodes[current_node_index].successor[i];
+
+							// if max_value in current successor node is greater than the max_value_index node switch //
+							if ( (nodes[max_value_index].max_value < nodes[current_node_successor_index].max_value) && (nodes[current_node_successor_index].node_index != nodes[current_node_index].max_predecessor ) )
+								{					
+									max_value_index = nodes[current_node_successor_index].node_index;
+								}
+						}
 				}
-			// reduse the amount of remaining nodes to be checked //
-			nodes[explored_queue_node_index].remaining_successors--;
-			// assign the next node index //
-			explored_queue_node_index = explored_queue[explored_queue_index];
+			current_node_successor_max_index = max_value_index;
+
 			#if defined(DEBUG)
-			
-				printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[explored_queue_node_index].node_index, nodes[explored_queue_node_index].node_name );
-				printf ( "DEBUG INDEXES explored_queue_index %ld \n\n", explored_queue_index);
+					
+				printf ( "\nDEBUG: Current MAX node index/ name %ld/ %s %d\n", nodes[current_node_successor_max_index].node_index, nodes[current_node_successor_max_index].node_name, max_value_test );
+
+			#endif // DEBUG			
+
+			// expand explred queue accordingly //
+
+			nodes[current_node_index].remaining_successors--;
+			nodes[current_node_successor_max_index].remaining_predecessor--;
+
+			#if defined(DEBUG)
+
+					printf ( "DEBUG: Current node remaining successors %ld \n\n", nodes[current_node_index].remaining_successors);
+			#endif // DEBUG			
+
+			explored_queue_size++;
+
+			new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size) );
+			if (new_ptr == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}	
+			explored_queue = new_ptr;
+
+			explored_queue[explored_queue_index] = current_node_index;
+			explored_queue_index++;
+
+			if ( starting_nodes_count > 0)
+				{
+					starting_nodes_index++;
+					current_node_index = starting_queue[starting_nodes_index];
+					starting_nodes_count--;
+				}
+			else
+				{
+					current_node_index = current_node_successor_max_index;
+				}
+			#if defined(DEBUG)
+
+				printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+				printf ( "DEBUG: Current node remaining successors %ld \n", nodes[current_node_index].remaining_successors);
+
+				printf ( "DEBUG INDEXES remaining nodes %d explored_queue_index %ld, starting_node_index %ld, starting_node_count %ld \n\n", remaining_nodes, explored_queue_index, starting_nodes_index, starting_nodes_count);
+				for (i = 0; i < explored_queue_size; i++)
+					{
+						printf( "DEBUG: explored_queue : %ld\n", explored_queue[i] ); 
+					}
+				printf ( "//////---NEXT-ITERATION---////////////\n\n");
 
 			#endif // DEBUG
 		}

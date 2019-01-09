@@ -41,6 +41,8 @@ typedef struct nodes
 
 	unsigned long predecessor_count;
 
+	unsigned long remaining_predecessor;
+
 	int max_value;
 
 	unsigned long max_predecessor;
