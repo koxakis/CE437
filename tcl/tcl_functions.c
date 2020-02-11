@@ -19,9 +19,11 @@ int init_interpreter()
 	interpreter = Tcl_CreateInterp();
 		
 	// define new tcl comands //
+	// HW 1 commands //
 	Tcl_CreateObjCommand(interpreter, "less", less, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "ls", ls, NULL, NULL);
 
+	// HW 2 commands //
 	Tcl_CreateObjCommand(interpreter, "cube_intersect_2", cube_intersect_2, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "distance_2", distance_2, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "supercube_2", supercube_2, NULL, NULL);
@@ -30,11 +32,16 @@ int init_interpreter()
 	Tcl_CreateObjCommand(interpreter, "sharp", sharp, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "off_f", off_f, NULL, NULL);
 
+	// HW 3 commands //
 	Tcl_CreateObjCommand(interpreter, "read_graph", read_graph, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "vim", vim, NULL, NULL);	
 	Tcl_CreateObjCommand(interpreter, "draw_graph", draw_graph, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "write_graph", write_graph, NULL, NULL);
 	Tcl_CreateObjCommand(interpreter, "graph_critical_path", graph_critical_path, NULL, NULL);
+
+	// HW 4 commands //
+	Tcl_CreateObjCommand(interpreter, "alg_division", alg_division, NULL, NULL);	
+	Tcl_CreateObjCommand(interpreter, "r_kernels", r_kernels, NULL, NULL);	
 
 	if (Tcl_Init(interpreter) == TCL_ERROR)
 	{
@@ -82,7 +89,7 @@ int vim(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const
 		return TCL_ERROR;
 	}
 	// allocate memory for system command //
-	com_command = (char *) malloc((file_length + 4) * sizeof(char));
+	com_command = (char *) malloc((file_length + 5) * sizeof(char));
 	if (com_command == NULL)
 	{
 		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -175,7 +182,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			return TCL_ERROR;
 		}
 
-		com_command = (char *) malloc((arg_length + dir_length + 3) * sizeof(char));
+		com_command = (char *) malloc((arg_length + dir_length + 5) * sizeof(char));
 		if (com_command == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -193,7 +200,7 @@ int ls(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const 
 			return TCL_ERROR;
 		}
 
-		com_command = (char *) malloc((dir_length + 3) * sizeof(char));
+		com_command = (char *) malloc((dir_length + 4) * sizeof(char));
 		if (com_command == NULL)
 		{
 			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
@@ -1782,26 +1789,26 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 
 	// protect from segmentation faults by checking the arguments //
 	if (argc != 2)
-	{
-		fprintf(stderr, RED"!!! (draw_graph) not enough arguments \n\x1B[0m draw_graph <file> \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!! (draw_graph) not enough arguments \n\x1B[0m draw_graph <file> \n"NRM);
+			return TCL_ERROR;
+		}
 	// get filename argument //
 	// get length of file name from tcl environment global //
 	// through Tcl_GetStringFromObj which returns a nonNull length from the given pinter //
 	arguments = Tcl_GetStringFromObj(argv[1], &file_length);
 	if (arguments == NULL)
-	{
-		fprintf(stderr, RED"!!!Error while aquaring arguments  \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error while aquaring arguments  \n"NRM);
+			return TCL_ERROR;
+		}
 	// allocate memory for system command //
-	com_command = (char *) malloc((file_length + 6) * sizeof(char));
+	com_command = (char *) malloc((file_length + 7) * sizeof(char));
 	if (com_command == NULL)
-	{
-		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-		return TCL_ERROR;
-	}
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}
 
 	// combine command and args to send to System //
 	sprintf(com_command, "%s %s", command, arguments);
@@ -1811,29 +1818,77 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 	return TCL_OK;
 }
 
+// Pop from queue function //
+int pop_from_explored_queue ()
+{
+		remaining_nodes--;
+		explored_queue_index--;
+		if ( explored_queue_index <= 0)
+			{
+				explored_queue_index = 0;
+			}
+		
+		explored_queue_size--;
+
+		if ( explored_queue_size == 0)
+			{
+				explored_queue_size = 1;
+			}
+		// realloc new memory //					
+		new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size ) );
+		if (new_ptr == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}	
+		explored_queue = new_ptr;	
+
+		return TCL_OK;
+}
+
+// dump explored queue //
+void dump_explored_queue ()
+{
+	int i;
+	for (i = 0; i < explored_queue_size; i++)
+		{
+			printf( "DEBUG: explored_queue : %ld with max predusessor %ld\n"NRM, explored_queue[i], nodes[explored_queue[i]].max_predecessor ); 
+		}
+}
+
+// Push in queue function //
+int push_in_explored_queue ( unsigned long current_node_index ) 
+{
+		explored_queue_size++;
+
+		new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size) );
+		if (new_ptr == NULL)
+			{
+				fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+				return TCL_ERROR;
+			}	
+		explored_queue = new_ptr;
+
+		explored_queue[explored_queue_index] = current_node_index;
+		explored_queue_index++;
+
+		return TCL_OK;
+}
+
 int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
 {
-
-	unsigned long *explored_queue = NULL;
-	unsigned long *new_ptr = NULL;
-
-	unsigned long *starting_queue = NULL;
-
 	unsigned long starting_nodes_count = 0;
 	unsigned long starting_nodes_index = 0;
 	unsigned long i = 0;
 
-	unsigned long explored_queue_index = 0;
-	unsigned long explored_queue_size = 1;
 	unsigned long current_node_index = 0;
 	unsigned long current_node_successor_index = 0;
 	unsigned long current_node_backtrack_index = 0;
  	unsigned long max_value_index = 0;
 	int max_value_test = 0;
-	int remaining_nodes=node_count;
 	unsigned long current_node_successor_max_index = 0;
 
-
+	// initialize the starting values //
 	for ( i = 0; i < node_count; i++ )
 		{
 			nodes[i].max_value = 0;
@@ -1842,6 +1897,7 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 			nodes[i].remaining_predecessor = nodes[i].predecessor_count;
 		} 
 
+	// allocate memory for the explored queue and starting queue //
 	explored_queue = calloc( 1, sizeof(unsigned long));
 	if (explored_queue == NULL)
 	{
@@ -1873,7 +1929,7 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 							return TCL_ERROR;
 						}			
 					starting_queue = new_ptr;
-
+					starting_queue[starting_nodes_count] = 0;
 				}
 		}
 	// assign node index from explore queue in order to start the search //
@@ -1881,60 +1937,72 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 	// it indicates the current node //
 
 	current_node_index = starting_queue[starting_nodes_index];
+	starting_nodes_index++;
 
-	
 	#if defined(DEBUG)
 	
-		printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+		printf ( GRN"DEBUG: Current node index/ name %ld/ %s \n" NRM, nodes[current_node_index].node_index, nodes[current_node_index].node_name );
 
 		for (i = 0; i < starting_nodes_count; i++)
 			{
-				printf( "DEBUG: starting_nodes : %ld\n", starting_queue[i] ); 
+				printf ( GRN "DEBUG: starting_nodes : %ld\n" NRM, starting_queue[i] ); 
 			}
 	#endif // DEBUG
-	
+
+	remaining_nodes=node_count;
+
 	// while the explored queue is not empty //
 	while ( remaining_nodes != 0)
 		{
+			#if defined(DEBUG)
+				printf ( BLU "\n\n//////---START-OF-ITERATION---////////////\n\n"NRM);
 
+				printf ( GRN "DEBUG: Current node index/ name %ld/ %s \n"NRM, nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+				printf ( GRN "DEBUG: Current node remaining successors %ld \n"NRM, nodes[current_node_index].remaining_successors);
+
+				printf ( CYN "DEBUG INDEXES remaining nodes %d explored_queue_index %ld, starting_node_index %ld, starting_node_count %ld \n\n"NRM, remaining_nodes, explored_queue_index, starting_nodes_index, starting_nodes_count);
+
+				dump_explored_queue ();
+			#endif // DEBUG
+			
 			if ( nodes[current_node_index].remaining_successors == 0)
 				{
-					i = explored_queue_index;
-					while ( nodes[i].remaining_successors == 0 )
-						{
-							current_node_backtrack_index = explored_queue[i];
+					i = explored_queue_index - 1;
 
+					current_node_backtrack_index = explored_queue[i];
+
+					while ( nodes[current_node_backtrack_index].remaining_successors == 0 )
+						{
 							if ( nodes[current_node_backtrack_index].remaining_successors == 0 )
 								{
-									remaining_nodes--;
-									explored_queue_index--;
 									
-									explored_queue_size--;
+									pop_from_explored_queue();
 
-									if ( explored_queue_size == 0)
-										{
-											explored_queue_size = 1;
-										}
-									// realloc new memory //					
-									new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size ) );
-									if (new_ptr == NULL)
-										{
-											fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-											return TCL_ERROR;
-										}	
-									explored_queue = new_ptr;	
 									#if defined(DEBUG)
 									
-										printf ( "DEBUG: Popped node index/ name %ld/ %s with value %d\n", nodes[current_node_backtrack_index].node_index, nodes[current_node_backtrack_index].node_name, nodes[current_node_backtrack_index].max_value );
+										printf ( GRN "DEBUG: Popped node index/ name %ld/ %s with value %d\n"NRM, nodes[current_node_backtrack_index].node_index, nodes[current_node_backtrack_index].node_name, nodes[current_node_backtrack_index].max_value );
 							
-										printf ( "DEBUG INDEXES in POP explored_queue_index %ld, explored_queue_size %ld, remaining_nodes %d \n\n", explored_queue_index, explored_queue_size, remaining_nodes);
+										printf ( CYN "DEBUG INDEXES in POP explored_queue_index %ld, explored_queue_size %ld, remaining_nodes %d \n\n"NRM, explored_queue_index, explored_queue_size, remaining_nodes);
 
 									#endif // DEBUG
 								}
-								i--;
+							i--;
+							current_node_backtrack_index = explored_queue[i];
 
 						} 
 
+					current_node_index = current_node_backtrack_index;
+					#if defined(DEBUG)
+
+						printf ( GRN "DEBUG: Current node (next) index/ name %ld/ %s \n"NRM, nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+						printf ( GRN "DEBUG: Current node remaining successors %ld \n"NRM, nodes[current_node_index].remaining_successors);
+
+						printf ( CYN "DEBUG INDEXES remaining nodes %d explored_queue_index %ld, starting_node_index %ld, starting_node_count %ld \n\n"NRM, remaining_nodes, explored_queue_index, starting_nodes_index, starting_nodes_count);
+
+						dump_explored_queue();
+						printf ( RED "//////---NEXT-ITERATION---////////////\n\n"NRM);
+
+					#endif
 					continue;
 				}
 			else
@@ -1951,18 +2019,15 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 
 							#if defined(DEBUG)
 							
-								printf ( "DEBUG: Current successor node index/ name %ld/ %s with value %d\n", nodes[current_node_successor_index].node_index, nodes[current_node_successor_index].node_name, max_value_test );
+								printf ( GRN "DEBUG: Current successor node index/ name %ld/ %s with value %d\n"NRM, nodes[current_node_successor_index].node_index, nodes[current_node_successor_index].node_name, max_value_test );
 
 							#endif // DEBUG
 
 							// compair successors node weight with the newly calculated weight //
-							if ( (max_value_test > nodes[current_node_successor_index].max_value) && (nodes[current_node_successor_index].node_index != nodes[current_node_index].max_predecessor ) ) 
+							if ( (max_value_test > nodes[current_node_successor_index].max_value) && (nodes[current_node_index].node_index != nodes[current_node_successor_index].max_predecessor ) ) 
 								{
 									// if greater assign to node value //
 									nodes[current_node_successor_index].max_value = max_value_test;
-									// maybe add predecessor //
-									// assign previous max to the node that this node is the successor to //
-									nodes[current_node_successor_index].max_predecessor = nodes[current_node_index].node_index;
 								}
 						}
 
@@ -1979,7 +2044,7 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 							current_node_successor_index = nodes[current_node_index].successor[i];
 
 							// if max_value in current successor node is greater than the max_value_index node switch //
-							if ( (nodes[max_value_index].max_value < nodes[current_node_successor_index].max_value) && (nodes[current_node_successor_index].node_index != nodes[current_node_index].max_predecessor ) )
+							if ( (nodes[max_value_index].max_value < nodes[current_node_successor_index].max_value) && (nodes[current_node_index].node_index != nodes[current_node_successor_index].max_predecessor ) )
 								{					
 									max_value_index = nodes[current_node_successor_index].node_index;
 								}
@@ -1989,54 +2054,50 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 
 			#if defined(DEBUG)
 					
-				printf ( "\nDEBUG: Current MAX node index/ name %ld/ %s %d\n", nodes[current_node_successor_max_index].node_index, nodes[current_node_successor_max_index].node_name, max_value_test );
+				printf ( GRN "\nDEBUG: Current MAX node index/ name %ld/ %s Value: %d,\n"NRM, nodes[current_node_successor_max_index].node_index, nodes[current_node_successor_max_index].node_name, max_value_test );
+				printf ( GRN "DEBUG: Current MAX node remaining successors %ld, max predecessor %ld \n"NRM, nodes[current_node_successor_max_index].remaining_successors, nodes[current_node_successor_max_index].max_predecessor);
 
 			#endif // DEBUG			
 
 			// expand explred queue accordingly //
 
 			nodes[current_node_index].remaining_successors--;
-			nodes[current_node_successor_max_index].remaining_predecessor--;
+			//nodes[current_node_successor_max_index].remaining_predecessor--;
 
 			#if defined(DEBUG)
 
-					printf ( "DEBUG: Current node remaining successors %ld \n\n", nodes[current_node_index].remaining_successors);
+					printf ( GRN "DEBUG: Current node remaining successors %ld \n\n"NRM, nodes[current_node_index].remaining_successors);
 			#endif // DEBUG			
 
-			explored_queue_size++;
+			push_in_explored_queue( current_node_index );
 
-			new_ptr = (unsigned long*) realloc(explored_queue, sizeof(unsigned long) * (explored_queue_size) );
-			if (new_ptr == NULL)
+			if ( starting_nodes_index < starting_nodes_count)
 				{
-					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
-					return TCL_ERROR;
-				}	
-			explored_queue = new_ptr;
-
-			explored_queue[explored_queue_index] = current_node_index;
-			explored_queue_index++;
-
-			if ( starting_nodes_count > 0)
-				{
-					starting_nodes_index++;
 					current_node_index = starting_queue[starting_nodes_index];
-					starting_nodes_count--;
+					starting_nodes_index++;				
+					#if defined(DEBUG)
+
+						printf ( GRN "DEBUG: Current node (next from starting queue) index/ name %ld/ %s \n"NRM, nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+						printf ( GRN "DEBUG: Current node remaining successors %ld \n"NRM, nodes[current_node_index].remaining_successors);
+					#endif
 				}
 			else
 				{
+					// assign previous max to the node that this node is the successor to //
+					nodes[current_node_successor_index].max_predecessor = nodes[current_node_index].node_index;
 					current_node_index = current_node_successor_max_index;
+					#if defined(DEBUG)
+
+						printf ( GRN "DEBUG: Current node (next) index/ name %ld/ %s \n"NRM, nodes[current_node_index].node_index, nodes[current_node_index].node_name );
+						printf ( GRN "DEBUG: Current node remaining successors %ld \n"NRM, nodes[current_node_index].remaining_successors);
+					#endif
 				}
 			#if defined(DEBUG)
 
-				printf ( "DEBUG: Current node index/ name %ld/ %s \n", nodes[current_node_index].node_index, nodes[current_node_index].node_name );
-				printf ( "DEBUG: Current node remaining successors %ld \n", nodes[current_node_index].remaining_successors);
+				printf ( CYN "DEBUG INDEXES remaining nodes %d explored_queue_index %ld, starting_node_index %ld, starting_node_count %ld \n\n"NRM, remaining_nodes, explored_queue_index, starting_nodes_index, starting_nodes_count);
+				dump_explored_queue ();
 
-				printf ( "DEBUG INDEXES remaining nodes %d explored_queue_index %ld, starting_node_index %ld, starting_node_count %ld \n\n", remaining_nodes, explored_queue_index, starting_nodes_index, starting_nodes_count);
-				for (i = 0; i < explored_queue_size; i++)
-					{
-						printf( "DEBUG: explored_queue : %ld\n", explored_queue[i] ); 
-					}
-				printf ( "//////---NEXT-ITERATION---////////////\n\n");
+				printf ( RED "//////---NEXT-ITERATION---////////////\n\n"NRM);
 
 			#endif // DEBUG
 		}
@@ -2051,3 +2112,284 @@ int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc
 	
 	return TCL_OK;
 }
+
+void print_list(cubesT *list, int count)
+{
+	int i;
+		for (i = 0; i < count - 1; i++)
+		{
+			if ( list[i].cube != NULL)
+				{
+					printf(" %s \n", list[i].cube);
+				}
+		}
+}
+
+int alg_division(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+	
+	char *input_f=NULL;
+	char *input_p=NULL;
+
+	int token_length=0;
+	char *token=NULL;
+	char *temp_char_res=NULL;
+	int cube_count_f=1;
+	int cube_count_p=1;
+
+	cubesT *new_ptr;
+	cubesT *f=NULL;
+	cubesT *p=NULL;
+	cubesT *output_q=NULL;
+	cubesT *output_r=NULL;
+	cubesT **vpi=NULL;
+
+	char *vij=NULL;
+
+	char delim[2]="+";
+
+	int i=0;
+	int j,k;
+	int input_f_l=0;
+	int input_p_l=0;
+	int p_index=0;
+	int f_index=0;
+	int q_index=0;
+
+	if (argc != 3)
+		{
+			fprintf(stderr, RED"!!! (alg_division) illegal arguments\n\x1B[0m alg_division F, P\n");
+			return TCL_ERROR;
+		}
+
+	input_f = Tcl_GetStringFromObj(argv[1], &input_f_l);
+	input_p = Tcl_GetStringFromObj(argv[2], &input_p_l);
+
+	f = (cubesT *) calloc( 1, sizeof(cubesT));
+	if (f == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		return TCL_ERROR;
+	}
+
+	p = (cubesT *) calloc( 1, sizeof(cubesT));
+		if (p == NULL)
+	{
+		fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+		return TCL_ERROR;
+	}
+
+	// parse input for F //
+	token = strtok(input_f, delim);
+	token_length = strlen(token);
+
+	while (token != NULL)
+		{
+			// remove any whitespace character from cube //
+			token = stripwhite(token);				
+
+			new_ptr = (cubesT*)realloc( f, sizeof(cubesT) * ( cube_count_f ) );
+			if (new_ptr == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}						
+			f = new_ptr;
+
+			f[cube_count_f-1].cube = NULL;
+
+			f[cube_count_f-1].cube = malloc(sizeof(char) * (strlen(token) +1) );
+			
+			f[cube_count_f-1].cube = strcpy( f[cube_count_f-1].cube, token);
+
+			// find next cube in list //
+			token = strtok(NULL, delim);	
+			cube_count_f++;		
+		}
+
+	// parse input for F //
+	token = strtok(input_p, delim);
+
+	// parse input for P //
+	while (token != NULL)
+		{
+			// remove any whitespace character from cube //
+			token = stripwhite(token);				
+
+			new_ptr = (cubesT*)realloc( p, sizeof(cubesT) * ( cube_count_p ) );
+			if (new_ptr == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}						
+			p = new_ptr;
+
+			p[cube_count_p-1].cube = NULL;
+
+			p[cube_count_p-1].cube = malloc(sizeof(char) * (strlen(token) +1) );
+			if (p[cube_count_p-1].cube == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}				
+
+			p[cube_count_p-1].cube = strcpy( p[cube_count_p-1].cube, token);
+			
+			// find next cube in list //
+			token = strtok(NULL, delim);	
+			cube_count_p++;		
+		}
+
+
+	printf ( "F: \n");
+	print_list( f, cube_count_f);
+	printf ( "P: \n");
+	print_list( p, cube_count_p);
+
+	vpi = (cubesT **) calloc (cube_count_p,sizeof(cubesT*));
+	if (vpi == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}		
+	for (i=0; i < cube_count_p; i++)
+		{
+			vpi[i] = (cubesT *) calloc (cube_count_f,sizeof(cubesT));
+			if (vpi[i] == NULL)
+				{
+					fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+					return TCL_ERROR;
+				}
+		}
+	// init cubes to NULL //
+	for(i=0; i < cube_count_p; i++)
+		{
+			for(j=0; j < cube_count_p; j++)
+				{
+					vpi[i][j].cube=NULL;
+				}
+		}
+
+	for (p_index = 0; p_index < cube_count_p-1; p_index++)
+		{
+			for (f_index = 0; f_index < cube_count_f-1; f_index++)
+				{
+					temp_char_res = (char *) calloc(token_length+1,sizeof(char));
+					if (temp_char_res == NULL)
+						{
+							fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+							return TCL_ERROR;
+						}	
+					do_cube_intersect(temp_char_res, f[f_index].cube, p[p_index].cube, token_length, token_length);
+
+					// if the result of the intersecion is the F then it contains all the parts of P
+					if ( strcmp( temp_char_res, f[f_index].cube) == 0 )
+						{
+
+							// allocate memory for vij // 
+							vij = (char *) calloc(token_length+1,sizeof(char));
+							if (vij == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}	
+							// remove Pi literals from Fj //
+							for (i = 0; i < token_length; i+=2)
+								{
+									// check if literals of P is in F and replace with don't care //
+									if ( ( f[f_index].cube[i] == p[p_index].cube[i] ) &&  ( f[f_index].cube[i+1] == p[p_index].cube[i+1]) )
+										{
+											vij[i] = '1' ;
+											vij[i+1] = '1' ;
+										}
+									else 
+										{
+											vij[i] = f[f_index].cube[i] ;
+											vij[i+1] = f[f_index].cube[i+1] ;											
+										}
+								}
+							
+							vpi[p_index][f_index].cube = (char *) calloc(token_length+1,sizeof(char));
+							if (vij == NULL)
+								{
+									fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+									return TCL_ERROR;
+								}	
+							strcat(vpi[p_index][f_index].cube, vij);							
+
+							free(vij);
+
+						}
+					
+					free(temp_char_res);
+				}
+		}
+	printf("\nVpi final: \n");
+	for(i=0; i<cube_count_p; i++)
+		{
+			print_list(vpi[i], cube_count_f);
+		}
+	// calculate the results //
+
+	output_q = (cubesT*) calloc(cube_count_f, sizeof(cubesT));
+	if (output_q == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}	
+	
+	// iterate through the the line of Vpi //
+	for ( i = 0; i < cube_count_p-2; i++ )
+		{
+			// iterate through the column of Vpi //
+			for ( j = 0; j < cube_count_f-1; j++)
+				{
+					// iterate through the next lines column and compair literals //
+					for ( k = 0; k < cube_count_f - 1; k++)
+						{
+							// skip if NULL //
+							if ( vpi[i][j].cube != NULL && vpi[i+1][k].cube != NULL)
+								{
+									// compair literals and if they are the same include in Q //
+									if ( (strcmp( vpi[i][j].cube, vpi[i+1][k].cube ) == 0) )
+										{
+											output_q[q_index].cube = malloc(sizeof(char) * ( token_length +1) );
+											if (output_q[q_index].cube == NULL)
+												{
+													fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+													return TCL_ERROR;
+												}
+
+											output_q[q_index].cube = strcpy( output_q[q_index].cube , vpi[i][j].cube);
+											q_index++;
+										}
+								}
+
+						}
+				}
+		}
+	printf("Q: \n");
+	for(i=0; i<cube_count_p; i++)
+		{
+			print_list(output_q, cube_count_f);
+		}
+
+	output_r = (cubesT*) calloc(cube_count_f, sizeof(cubesT));
+	if (output_r == NULL)
+		{
+			fprintf(stderr, RED"!!!Error in memory allocation \n"NRM);
+			return TCL_ERROR;
+		}	
+	
+
+
+	return TCL_OK;
+} 
+
+
+int r_kernels(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[])
+{
+	
+	return TCL_OK;
+}
+

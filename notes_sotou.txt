@@ -1,0 +1,10 @@
+1) pass through Valgrind
+2) add +1 to memory about strings to add null terminator
+3) make things more simple 
+4) dont overcomplicate things 
+5) better code split 
+6) don't use complex pointer stuff
+7) better code intentetion 
+8) more comments 
+9) make the presentation on point 
+10) prepair the demo and test cases ahead of time 

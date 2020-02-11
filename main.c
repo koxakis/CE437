@@ -3,11 +3,11 @@
 //									  Nikolas Koxenoglou																		
 // 										main program		   																														 
 /*************************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <unistd.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <limits.h>
+//#include <unistd.h>
 
 #include "tcl/tcl_functions.h"
 #include "readline/readline_functions.h"

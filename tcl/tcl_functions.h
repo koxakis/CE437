@@ -3,11 +3,14 @@
 //									  Nikolas Koxenoglou																		
 //		 							TCL function prototypes 				   																														 
 /*************************************************************************************/
+
 #include <tcl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <unistd.h>
 #include "../readline/readline_functions.h"
 #include "../file_functions/parser.h"
 
@@ -61,6 +64,22 @@ unsigned long node_count;
 
 nodesT *nodes;
 
+unsigned long *explored_queue = NULL;
+unsigned long *new_ptr = NULL;
+
+unsigned long *starting_queue = NULL;
+
+long explored_queue_index = 0;
+unsigned long explored_queue_size = 0;
+
+int remaining_nodes;
+
+typedef struct cubes
+{
+	char *cube;
+}cubesT;
+
+
 typedef struct inter_cube_list { 
 
 	char **inter_cube_res;
@@ -109,6 +128,11 @@ int draw_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj
 int write_graph(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
 
 int graph_critical_path(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int alg_division(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
+int r_kernels(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj *const argv[]);
+
 
 // helper TCL functions //
 int do_sharp_2(char **, char*, char *, int, int);
