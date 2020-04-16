@@ -1,3 +1,4 @@
+
 /*************************************************************************************/
 //											CE437   																			  
 //									  Nikolas Koxenoglou																		
@@ -11,8 +12,8 @@
 #include <ctype.h>
 #include <limits.h>
 #include <unistd.h>
-#include "../readline/readline_functions.h"
-#include "../file_functions/parser.h"
+//#include "../readline/readline_functions.h"
+//#include "../file_functions/parser.h"
 
 #define NRM  "\x1B[0m"		// Normal Color
 #define RED  "\x1B[31m"		// Red Color
@@ -64,13 +65,6 @@ unsigned long node_count;
 
 nodesT *nodes;
 
-unsigned long *explored_queue = NULL;
-unsigned long *new_ptr = NULL;
-
-unsigned long *starting_queue = NULL;
-
-long explored_queue_index = 0;
-unsigned long explored_queue_size = 0;
 
 int remaining_nodes;
 
@@ -143,3 +137,4 @@ void do_cube_intersect(char *, char *, char *, int , int);
 int do_cube_check(int, int);
 // import stripwhite from readlune_functions.h //
 extern char *stripwhite (char *);
+

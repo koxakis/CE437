@@ -1,16 +1,17 @@
+
 /*************************************************************************************/
 //											CE437   																			  
 //									  Nikolas Koxenoglou																		
 // 										main program		   																														 
 /*************************************************************************************/
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <limits.h>
-//#include <unistd.h>
 
-#include "tcl/tcl_functions.h"
+
 #include "readline/readline_functions.h"
+
+#ifndef TCL_FUNCTIONS_H
+#define TCL_FUNCTIONS_H 
+#include "tcl/tcl_functions.h"
+#endif
 
 #define NRM  "\x1B[0m"		// Normal Color
 #define RED  "\x1B[31m"		// Red Color
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
 	printf("*	Nikolas Koxenoglou			*\n");
 	printf("*						*\n");
 	printf("*	You are logged in as user: %s	*\n", username);
-	printf("*	On machine with hostname: %s		*\n", hostname);
+	printf("*	On machine with hostname: %s  \n", hostname);
 	printf("*************************************************\n\n");
 	
 	while(1)
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
 			if (tcl_res == TCL_ERROR)
 			{
 				fprintf(stderr, RED"!!! Error tcl command: %s\n"NRM, command);
-                // returns the result for interpreter as a string if there is one //
+        // returns the result for interpreter as a string if there is one //
 				if (*Tcl_GetStringResult(interpreter) != '\0')
 				{
 		  		 	printf("%s\n", Tcl_GetStringResult(interpreter));

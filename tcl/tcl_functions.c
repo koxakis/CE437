@@ -6,6 +6,12 @@
 
 #include "tcl_functions.h"
 
+unsigned long *explored_queue = NULL;
+unsigned long *new_ptr = NULL;
+unsigned long *starting_queue = NULL;
+long explored_queue_index = 0;
+unsigned long explored_queue_size = 0;
+
 // identify or return the name of the binary file containing the application //
 void find_executable(char *argv)
 {
@@ -2392,4 +2398,3 @@ int r_kernels(ClientData clientdata, Tcl_Interp *interpreter, int argc, Tcl_Obj 
 	
 	return TCL_OK;
 }
-
